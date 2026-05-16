@@ -39,6 +39,24 @@ The schema uses Mongoose aliases to map cleaner field names to existing database
 - **In code**: `heDaoTao`  
   **In database**: `he_dao_tao`
 
+### Caveat — aliases do not survive `.lean()`
+
+Mongoose `alias` is a virtual: it only resolves when a query returns a hydrated document. **Any query using `.lean()` returns the raw BSON from MongoDB**, so the snake_case names (`ten_truong`, `he_dao_tao`) come through unchanged and the camelCase `ten` / `heDaoTao` will be `undefined`. The same caveat applies to `.select('ten')` on a lean query — Mongoose projects the literal path `ten`, which does not exist in the externally-populated DB.
+
+Every read path in this app uses `.lean()` for performance. To keep the camelCase contract for callers, lean results are normalized via a helper (`backend/src/utils/donViLienKet.js`):
+
+```javascript
+import { normalizeDonViLienKet, normalizeDonViLienKetList } from '../utils/donViLienKet.js';
+
+const raw = await DonViLienKet.findById(id).lean();
+const school = normalizeDonViLienKet(raw); // { _id, ten, heDaoTao, ... }
+
+const rawList = await DonViLienKet.find(filter).lean();
+const schools = normalizeDonViLienKetList(rawList);
+```
+
+If you add a new endpoint that reads `DonViLienKet`, **route the result through the normalizer** or the camelCase fields will silently be `undefined` and downstream renderers will show blank strings.
+
 ---
 
 ## Database Connection
