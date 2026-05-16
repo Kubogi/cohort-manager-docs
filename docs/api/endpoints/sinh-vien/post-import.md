@@ -43,17 +43,21 @@ The `daiDoi` is taken from the sheet **name**, not a column. Columns read from e
 
 | Column | Field | Required | Notes |
 |---|---|---|---|
-| B | `maSV` | yes | |
-| C | `hoTen` | yes | |
-| D | `ngaySinh` | yes | Accepts an Excel date cell, an Excel date-serial number, or text in `dd/mm/yyyy`, `dd-mm-yyyy`, `dd.mm.yyyy`, or ISO format. |
-| E | `lop` | no | |
-| F | `nganh` | no | |
-| G | `gioiTinh` | no | The Vietnamese strings `"Nam"` → `true` and `"Nữ"` → `false`. Anything else is unset. |
-| H | `soDienThoai` | no | |
-| I | `cccd` | no | |
-| J | `ghiChu` | no | |
+| A | (STT) | no | Sequence number; ignored by the parser. |
+| B | `cccd` | no | Citizen-ID. |
+| C | `maSV` | yes | |
+| D | `hoTen` | yes | |
+| E | `ngaySinh` | yes | Accepts an Excel date cell, an Excel date-serial number, or text in `dd/mm/yyyy`, `dd-mm-yyyy`, `dd.mm.yyyy`, or ISO format. |
+| F | `lop` | no | |
+| G | `nganh` | no | |
+| H | `noiSinh` | no | Place of birth. |
+| I | `gioiTinh` | no | The Vietnamese strings `"Nam"` → `true` and `"Nữ"` → `false`. Anything else is unset. |
+| J | `danToc` | no | Ethnicity. |
+| K | `soDienThoai` | no | |
+| L | `trangThai` | no | Matched case-insensitively against the enum (`'Đang học'`, `'Hoãn học'`, `'Thôi học'`, `'Đình chỉ'`, `'Miễn học'`, `'Không tham gia học'`). Empty or unmatched values default to `'Đang học'`. |
+| M | `ghiChu` | no | |
 
-Inserted students always have `trangThai: 'Đang học'`.
+If column L is empty or contains an unrecognized value, the inserted student receives `trangThai: 'Đang học'`.
 
 ---
 

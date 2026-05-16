@@ -122,15 +122,19 @@ The controller:
 
    | Column | Field | Required |
    |---|---|---|
-   | B | `maSV` | yes |
-   | C | `hoTen` | yes |
-   | D | `ngaySinh` | yes (accepts Excel date cell, serial number, or `dd/mm/yyyy` / `dd-mm-yyyy` / `dd.mm.yyyy` / ISO) |
-   | E | `lop` | no |
-   | F | `nganh` | no |
-   | G | `gioiTinh` | no (`"Nam"` → `true`, `"Nữ"` → `false`) |
-   | H | `soDienThoai` | no |
-   | I | `cccd` | no |
-   | J | `ghiChu` | no |
+   | A | (STT — ignored) | — |
+   | B | `cccd` | no |
+   | C | `maSV` | yes |
+   | D | `hoTen` | yes |
+   | E | `ngaySinh` | yes (accepts Excel date cell, serial number, or `dd/mm/yyyy` / `dd-mm-yyyy` / `dd.mm.yyyy` / ISO) |
+   | F | `lop` | no |
+   | G | `nganh` | no |
+   | H | `noiSinh` | no |
+   | I | `gioiTinh` | no (`"Nam"` → `true`, `"Nữ"` → `false`) |
+   | J | `danToc` | no |
+   | K | `soDienThoai` | no |
+   | L | `trangThai` | no (case-insensitive match against the enum; empty or unmatched → `'Đang học'`) |
+   | M | `ghiChu` | no |
 
 5. For each row:
    - Resolves the sheet-name `daiDoi` → `DaiDoi._id` inside the chosen `khoa`. If no match, creates a new `DaiDoi` (and counts it in `createdDaiDoi`).

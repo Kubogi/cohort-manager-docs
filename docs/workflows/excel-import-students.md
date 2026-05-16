@@ -18,7 +18,7 @@ Admin uploads a multi-sheet Excel roster received from a partner school. Each sh
 | **Sheet ⇒ daiDoi** | Each sheet's name is the battalion name. A sheet literally named `SỐ LƯỢNG` is skipped (it's a summary tab in the operator's template). |
 | **Header row** | Row 5. The parser does not look at it; it's there for the human filling the sheet. |
 | **Data rows** | Row 6 onward. |
-| **Column layout** | Fixed by position: B=`maSV`, C=`hoTen`, D=`ngaySinh`, E=`lop`, F=`nganh`, G=`gioiTinh` (`"Nam"`/`"Nữ"`), H=`soDienThoai`, I=`cccd`, J=`ghiChu`. |
+| **Column layout** | Fixed by position: A=STT (skipped), B=`cccd`, C=`maSV`, D=`hoTen`, E=`ngaySinh`, F=`lop`, G=`nganh`, H=`noiSinh`, I=`gioiTinh` (`"Nam"`/`"Nữ"`), J=`danToc`, K=`soDienThoai`, L=`trangThai` (case-insensitive; falls back to `'Đang học'` if empty or unmatched), M=`ghiChu`. |
 | **Date format** | `ngaySinh` accepts an Excel date cell, an Excel date-serial number, or text in `dd/mm/yyyy`, `dd-mm-yyyy`, `dd.mm.yyyy`, or ISO. |
 
 The import column layout is **different** from the export templates in `backend/forms/Hệ {ĐH,CĐ}/`. Don't try to reuse a grade-book template as an import file; ask the operator for their import template.
@@ -36,7 +36,7 @@ The import column layout is **different** from the export templates in `backend/
    - Iterates each sheet. Skips `SỐ LƯỢNG`. For each remaining sheet:
      a. Resolves sheet name → existing `DaiDoi` under the chosen `khoa`. If none exists, creates one and increments `createdDaiDoi`.
      b. Iterates rows from row 6 onward. For each row:
-        - Reads columns B–J. Skips entirely empty rows.
+        - Reads columns B–M. Skips entirely empty rows.
         - Normalizes `gioiTinh` (`"Nam"` → `true`, `"Nữ"` → `false`).
         - Parses `ngaySinh`.
         - Looks up an existing student by `{ maSV, hoTen, ngaySinh }`. If found → counts as duplicate, skips.

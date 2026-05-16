@@ -58,7 +58,7 @@ All other fields from SinhVien schema are optional.
 
 **Important**: `gioiTinh` is **Boolean** (true=Male, false=Female), not string.
 
-- `trangThai` (string) — Valid values: `'Đang học'`, `'Hoãn học'`, `'Thôi học'`, `'Đình chỉ'`, `'Miễn học'` (enforced by Joi validator).
+- `trangThai` (string) — Valid values: `'Đang học'`, `'Hoãn học'`, `'Thôi học'`, `'Đình chỉ'`, `'Miễn học'`, `'Không tham gia học'` (enforced by Joi validator).
 - `ghiChuYTe` (string, allow empty, max 2000 chars) — Medical notes.
 
 ---

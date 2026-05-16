@@ -24,6 +24,7 @@ Student records in the system. Each student belongs to a class (lop), platoon (d
 | ngaySinh | Date | No | Yes* | - | Date of birth (part of compound index) |
 | nganh | String | No | No | - | Major/specialization/field of study |
 | noiSinh | String | No | No | - | Place of birth |
+| danToc | String | No | No | - | Ethnicity (e.g. "Kinh", "Tày") |
 | gioiTinh | **Boolean** | No | No | - | Gender (true = Male, false = Female) |
 | soDienThoai | String | No | No | - | Phone number |
 | lop | String | No | No | - | Class designation/name |
@@ -32,7 +33,7 @@ Student records in the system. Each student belongs to a class (lop), platoon (d
 | truong | ObjectId | No | No | ref: 'DonViLienKet' | Partner institution (secondary DB) |
 | ngayNhapHoc | Date | No | No | - | Enrollment date |
 | ngayVe | Date | No | No | - | Return/departure date (if applicable) |
-| trangThai | String | No | No | enum: 'Đang học' / 'Hoãn học' / 'Thôi học' / 'Đình chỉ' / 'Miễn học' | Current academic status. Mutations are typically driven by the [decision-processing workflow](../../workflows/decision-processing.md). |
+| trangThai | String | No | No | enum: 'Đang học' / 'Hoãn học' / 'Thôi học' / 'Đình chỉ' / 'Miễn học' / 'Không tham gia học' | Current academic status. Mutations are typically driven by the [decision-processing workflow](../../workflows/decision-processing.md). |
 | ghiChu | String | No | No | - | General notes/comments |
 | ghiChuYTe | String | No | No | default: `''` | Free-text medical note shown alongside `trangThaiSucKhoe` in the health-record UI. |
 | trangThaiSucKhoe | String | No | No | - | Health status summary |

@@ -74,6 +74,7 @@ These records don't drive `trangThai` directly — only a *processed* `QuyetDinh
 | `Thôi học` | Withdrawn | Processed QĐ with `loaiQD: "Thôi học"` |
 | `Đình chỉ` | Suspended | Processed QĐ with `loaiQD: "Đình chỉ"` |
 | `Miễn học` | Exempted | Processed QĐ with `loaiQD: "Miễn học"` |
+| `Không tham gia học` | Did not participate in studies | Set at import time via column L of the Excel import; no in-app transition path. |
 
 A student in any non-`Đang học` state still has all their grades, decisions, and health records intact. The `trangThai` change is purely a status flag; it does not cascade-delete anything.
 
