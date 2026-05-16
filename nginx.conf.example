@@ -1,0 +1,90 @@
+# /etc/nginx/sites-available/student-management
+#
+# Example Nginx server block for the student-management app. After editing
+# values below (server_name, root path, etc.), symlink into sites-enabled
+# and run `sudo nginx -t && sudo systemctl reload nginx`.
+#
+# Certbot will rewrite this file when you run `certbot --nginx -d your-domain`
+# to add the HTTPS block and the HTTP→HTTPS redirect. The two server blocks
+# below describe the final shipped configuration after Certbot has run.
+#
+# See /docs/guides/deployment.md for the full setup walkthrough.
+
+# ──────────── HTTP → HTTPS redirect ────────────
+server {
+    listen 80;
+    listen [::]:80;
+    server_name your-domain;
+
+    # ACME challenge directory for Certbot renewal
+    location /.well-known/acme-challenge/ {
+        root /var/www/html;
+    }
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+# ──────────── HTTPS public-facing server ────────────
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name your-domain;
+
+    # Certbot-managed certificates (paths will be rewritten on `certbot --nginx`)
+    # ssl_certificate     /etc/letsencrypt/live/your-domain/fullchain.pem;
+    # ssl_certificate_key /etc/letsencrypt/live/your-domain/privkey.pem;
+    # include             /etc/letsencrypt/options-ssl-nginx.conf;
+    # ssl_dhparam         /etc/letsencrypt/ssl-dhparams.pem;
+
+    # Allow large học-liệu uploads (default is 1 MB which rejects most files).
+    client_max_body_size 110M;
+
+    # Static frontend served from the Vite build output.
+    # Change the path to match your deploy user's checkout.
+    root /home/deploy/apps/student-management/frontend/dist;
+    index index.html;
+
+    # SPA fallback for client-side routing. react-admin uses hash routing today
+    # so this is mostly a safety net for future history-mode routing.
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # Cache hashed asset filenames aggressively. Vite produces filenames like
+    # /assets/index-<hash>.js, so any change in code yields a new filename.
+    location ~* \.(?:js|css|woff2?|ttf|otf|eot|jpg|jpeg|png|gif|webp|svg|ico)$ {
+        expires 1y;
+        access_log off;
+        add_header Cache-Control "public, immutable";
+        try_files $uri =404;
+    }
+
+    # API → Node backend on localhost. The PM2 instance binds to env.port
+    # (default 3000); change if you set PORT differently.
+    location /api/ {
+        proxy_pass         http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+
+        proxy_set_header   Host              $host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+        proxy_set_header   Connection        "";
+
+        # Long timeouts cover large Excel exports that run on the request thread.
+        proxy_connect_timeout 30s;
+        proxy_send_timeout    300s;
+        proxy_read_timeout    300s;
+
+        # Don't buffer file downloads — let them stream straight through.
+        proxy_buffering off;
+    }
+
+    # Optional: tighter security headers. Most hardening is already done by
+    # helmet() inside Express; this is belt-and-braces.
+    add_header X-Frame-Options       "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy       "strict-origin-when-cross-origin" always;
+}

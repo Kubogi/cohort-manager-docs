@@ -1,0 +1,59 @@
+# /etc/mongod.conf — annotated example for student-management deployments.
+#
+# Apply by copying the relevant blocks into /etc/mongod.conf and restarting:
+#   sudo systemctl restart mongod
+#
+# See /docs/guides/deployment.md for the full setup walkthrough including
+# user creation (`db.createUser(...)`) inside mongosh.
+
+# ── Where data lives ───────────────────────────────────────────────────────
+storage:
+  dbPath: /var/lib/mongodb
+  journal:
+    enabled: true
+
+# ── Logging ────────────────────────────────────────────────────────────────
+systemLog:
+  destination: file
+  path: /var/log/mongodb/mongod.log
+  logAppend: true
+  # quiet: true                # uncomment in steady state to reduce log noise
+
+# ── Networking ─────────────────────────────────────────────────────────────
+# Bind to localhost only. Nginx and PM2 reach mongod over loopback; nothing
+# outside the VPS should be able to connect to 27017. Pair this with a UFW
+# rule that does NOT open 27017.
+net:
+  port: 27017
+  bindIp: 127.0.0.1
+  # If you ever need to expose mongod to a private network (multi-host),
+  # change bindIp to a comma-separated list including the private IP, and
+  # combine with security.authorization=enabled and a firewall whitelist.
+
+# ── Process management ────────────────────────────────────────────────────
+processManagement:
+  timeZoneInfo: /usr/share/zoneinfo
+  # PID file is managed by the systemd unit; leave commented unless overriding.
+
+# ── Security ───────────────────────────────────────────────────────────────
+# Require authentication for ALL connections, including from localhost.
+# Without this, a process that lands on the box can dump every collection.
+security:
+  authorization: enabled
+  # For replica sets, also configure:
+  # keyFile: /etc/mongo-keyfile
+
+# ── Operation profiling (optional) ────────────────────────────────────────
+# Capture slow queries to a system collection. Useful when investigating
+# perf regressions; disable in steady state.
+#operationProfiling:
+#  mode: slowOp
+#  slowOpThresholdMs: 200
+
+# ── Replication / sharding ────────────────────────────────────────────────
+# This deployment is single-node. Add replication only when you need HA;
+# uncomment and follow https://www.mongodb.com/docs/manual/replication/.
+#replication:
+#  replSetName: rs0
+#sharding:
+#  clusterRole: shardsvr

@@ -1,0 +1,59 @@
+// PM2 ecosystem file for the student-management backend.
+//
+// Copy to ecosystem.config.js and adjust the paths / env. Then:
+//   pm2 start ecosystem.config.js
+//   pm2 save
+//   pm2 startup systemd     (run the printed sudo command once)
+//
+// PM2 does NOT read the project-root .env automatically. We load it here
+// so all variables in .env become process.env for the Node process — the
+// same way `node src/server.js` sees them during local development.
+//
+// See /docs/guides/deployment.md and /docs/guides/environment-variables.md
+// for context.
+
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '.env') });
+
+module.exports = {
+  apps: [
+    {
+      name: 'student-mgmt-api',
+
+      // The backend's package.json sets "type": "module" and the entrypoint
+      // is plain server.js — no transpile step. PM2 launches Node directly.
+      script: 'src/server.js',
+      cwd: path.resolve(__dirname, 'backend'),
+
+      // Single instance keeps things simple. Raise this only if you also
+      // add a graceful-shutdown handler to server.js — otherwise `pm2 reload`
+      // can still drop in-flight requests.
+      instances: 1,
+      exec_mode: 'fork',
+
+      // Restart on crash; cap restart rate to surface persistent failures.
+      autorestart: true,
+      max_restarts: 10,
+      restart_delay: 2000,
+
+      // Restart if memory grows past this. Excel exports run synchronously on
+      // the request thread and can pin a lot of memory briefly.
+      max_memory_restart: '1G',
+
+      // PM2 logs go to ~/.pm2/logs/<name>-{out,error}.log by default.
+      // Set explicit paths to keep them next to the app if you prefer.
+      // out_file:    '/var/log/student-mgmt/out.log',
+      // error_file:  '/var/log/student-mgmt/err.log',
+      merge_logs: true,
+      time: true,
+
+      // Pass every variable from the loaded .env to the child process.
+      // Note JWT_REFRESH_EXIRES_IN is the (typo'd) name the backend reads —
+      // do NOT rename it to JWT_REFRESH_EXPIRES_IN.
+      env: {
+        ...process.env,
+        NODE_ENV: process.env.NODE_ENV || 'production'
+      }
+    }
+  ]
+};
