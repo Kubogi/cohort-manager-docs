@@ -32,18 +32,28 @@ Top-level cohort administration. Use it to:
 
 ### Tab 1 — "Cán bộ quản lý" (default)
 
-For the selected khóa, a table of its battalions; each row expands to show the staff assigned during each "hiệu lực" period.
+For the selected khóa, a flat table of `cán bộ quản lý` assignments — one row per `(canBo[i], soQD[i], ngayQD[i], hieuLuc[i])` tuple — plus one placeholder row for battalions that have no staff yet (e.g. just auto-created by the Excel import on the sinh-viên page). Every battalion in the khóa appears at least once.
 
 **What it does:**
 - **Thêm khóa** — opens a modal to create a new `Khoa` with `ten` + a starting list of `DaiDoi` names. Cascading: each daiDoi is created with `khoa: <newKhoa._id>`.
 - **Sửa khóa / Xoá khóa** — edits or deletes the selected khóa. Deleting cascades to its daiDois and (in some implementations) its students.
 - **Thêm đại đội** — adds a new battalion to the current khóa. Validator enforces uniqueness of `(ten, khoa, donViLienKet)`.
-- **Sửa đại đội** — opens a modal that includes the *aligned-arrays* editor for staff assignments: `canBo`, `soQD`, `ngayQD`, `hieuLuc` must all have equal length. The DaiDoi schema's `pre('validate')` hook enforces this at write time; the modal UI prevents you from saving misaligned arrays.
+- **Sửa đại đội** — opens a modal that includes the *aligned-arrays* editor for staff assignments: `canBo`, `soQD`, `ngayQD`, `hieuLuc` must all have equal length. The DaiDoi schema's `pre('validate')` hook enforces this at write time; the modal UI prevents you from saving misaligned arrays. The modal lists *all* current assignments for the battalion, including when there are multiple.
 - **Xoá đại đội** — deletes the battalion. Cascade to students depends on service implementation.
 
-**What it shows:**
-- Per battalion: name, current student count (`quanSo`), most-recent staff assignment.
-- Expanded row: full history of `canBo[i]` over `hieuLuc[i].{batDau, ketThuc}` periods.
+**What it shows (table columns, left to right):**
+
+| Column | Source |
+|---|---|
+| STT | row index |
+| Đại đội | `DaiDoi.ten` |
+| Cán bộ quản lý | `CanBoQuanLy.hoTen` (empty on placeholder rows) |
+| Cấp bậc, Đơn vị, Chức vụ | from the joined `CanBoQuanLy` record |
+| Số QĐ, Ngày ra QĐ, Hiệu lực | from the aligned arrays on `DaiDoi` |
+| Ghi chú | from the joined `CanBoQuanLy` record |
+| Hành động | edit/delete for the row's parent `DaiDoi` |
+
+A battalion with `N` aligned staff entries produces `N` rows (same `Đại đội`, different `Cán bộ quản lý`); a battalion with none produces one placeholder row whose staff columns are blank but whose action buttons still operate on the battalion.
 
 ### Tab 2 — "Trực và kiểm soát quân sự"
 
