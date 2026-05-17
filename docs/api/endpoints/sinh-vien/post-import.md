@@ -16,7 +16,7 @@
 
 Imports a list of students from an Excel file. The backend parses the file with the **`xlsx` (SheetJS)** library, resolves each **sheet name** to an existing or newly-created battalion inside the supplied `khoa`, inserts new students, and reports per-row errors.
 
-The workbook may contain multiple sheets — each sheet's name is treated as a `đại đội` (battalion). A sheet literally named `SỐ LƯỢNG` is skipped. Within each sheet, **row 5 is the header** and data begins on row 6. The expected column layout matches the import templates the operator uses; it is **not** the same layout as the export templates in `backend/forms/Hệ {ĐH,CĐ}/`.
+The workbook may contain multiple sheets — each sheet's name is treated as a `đại đội` (battalion). A sheet literally named `SỐ LƯỢNG` is skipped. Within each sheet, the **header row is auto-detected**: the parser scans from row 1 and treats the first row whose A/B/C cells are `STT` / `CCCD` / `Mã SV` (case-insensitive, whitespace trimmed) as the header. Data begins on the row immediately after. Sheets without a matching header are skipped silently. The expected column layout matches the import templates the operator uses; it is **not** the same layout as the export templates in `backend/forms/Hệ {ĐH,CĐ}/`.
 
 ---
 
@@ -37,7 +37,7 @@ Authorization: Bearer <accessToken>
 | `khoa` | ObjectId string | No | Default `khoa` (faculty/cohort) for rows that don't carry their own. If a row references a `daiDoi` that doesn't exist under this `khoa`, the battalion is created automatically. |
 | `truong` | ObjectId string | No | Default `truong` (đơn vị liên kết) for rows that don't carry their own. |
 
-### Column expectations (per sheet; row 5 = header, data from row 6)
+### Column expectations (per sheet; header auto-detected, data starts on the next row)
 
 The `daiDoi` is taken from the sheet **name**, not a column. Columns read from each data row:
 
@@ -48,16 +48,18 @@ The `daiDoi` is taken from the sheet **name**, not a column. Columns read from e
 | C | `maSV` | yes | |
 | D | `hoTen` | yes | |
 | E | `ngaySinh` | yes | Accepts an Excel date cell, an Excel date-serial number, or text in `dd/mm/yyyy`, `dd-mm-yyyy`, `dd.mm.yyyy`, or ISO format. |
-| F | `lop` | no | |
-| G | `nganh` | no | |
-| H | `noiSinh` | no | Place of birth. |
-| I | `gioiTinh` | no | The Vietnamese strings `"Nam"` → `true` and `"Nữ"` → `false`. Anything else is unset. |
-| J | `danToc` | no | Ethnicity. |
+| F | `noiSinh` | no | Place of birth. |
+| G | `gioiTinh` | no | The Vietnamese strings `"Nam"` → `true` and `"Nữ"` → `false`. Anything else is unset. |
+| H | `danToc` | no | Ethnicity. |
+| I | `lop` | no | |
+| J | `nganh` | no | |
 | K | `soDienThoai` | no | |
-| L | `trangThai` | no | Matched case-insensitively against the enum (`'Đang học'`, `'Hoãn học'`, `'Thôi học'`, `'Đình chỉ'`, `'Miễn học'`, `'Không tham gia học'`). Empty or unmatched values default to `'Đang học'`. |
-| M | `ghiChu` | no | |
+| L | `ngayNhapHoc` | no | Same date formats as `ngaySinh`. Empty cells store `undefined`. |
+| M | `ngayVe` | no | Same date formats as `ngaySinh`. Empty cells store `undefined`. |
+| N | `trangThai` | no | Matched case-insensitively against the enum (`'Đang học'`, `'Hoãn học'`, `'Thôi học'`, `'Đình chỉ'`, `'Miễn học'`, `'Không tham gia học'`). Empty or unmatched values default to `'Đang học'`. |
+| O | `ghiChu` | no | |
 
-If column L is empty or contains an unrecognized value, the inserted student receives `trangThai: 'Đang học'`.
+If column N is empty or contains an unrecognized value, the inserted student receives `trangThai: 'Đang học'`.
 
 ---
 

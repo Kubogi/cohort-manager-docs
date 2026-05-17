@@ -118,7 +118,7 @@ The controller:
 1. Receives the multipart upload via multer, file lands in `backend/uploads/.tmp/`.
 2. Opens it with **`xlsx`** (SheetJS).
 3. Iterates over **every sheet** in the workbook. Each sheet's **name** is treated as the `đại đội` for the students inside it (the value is *not* read from a cell). A sheet named exactly `SỐ LƯỢNG` is skipped — it's a summary tab in the operator's template, not data.
-4. Within each sheet: **row 5 is the header, data starts at row 6.** Columns read by position:
+4. Within each sheet: **the header row is auto-detected** — the parser scans from row 1 and treats the first row whose A/B/C cells are `STT` / `CCCD` / `Mã SV` (case-insensitive, whitespace trimmed) as the header. Data starts on the next row. Sheets without a matching header are skipped. Columns read by position:
 
    | Column | Field | Required |
    |---|---|---|
@@ -127,14 +127,16 @@ The controller:
    | C | `maSV` | yes |
    | D | `hoTen` | yes |
    | E | `ngaySinh` | yes (accepts Excel date cell, serial number, or `dd/mm/yyyy` / `dd-mm-yyyy` / `dd.mm.yyyy` / ISO) |
-   | F | `lop` | no |
-   | G | `nganh` | no |
-   | H | `noiSinh` | no |
-   | I | `gioiTinh` | no (`"Nam"` → `true`, `"Nữ"` → `false`) |
-   | J | `danToc` | no |
+   | F | `noiSinh` | no |
+   | G | `gioiTinh` | no (`"Nam"` → `true`, `"Nữ"` → `false`) |
+   | H | `danToc` | no |
+   | I | `lop` | no |
+   | J | `nganh` | no |
    | K | `soDienThoai` | no |
-   | L | `trangThai` | no (case-insensitive match against the enum; empty or unmatched → `'Đang học'`) |
-   | M | `ghiChu` | no |
+   | L | `ngayNhapHoc` | no (same date formats as `ngaySinh`) |
+   | M | `ngayVe` | no (same date formats as `ngaySinh`) |
+   | N | `trangThai` | no (case-insensitive match against the enum; empty or unmatched → `'Đang học'`) |
+   | O | `ghiChu` | no |
 
 5. For each row:
    - Resolves the sheet-name `daiDoi` → `DaiDoi._id` inside the chosen `khoa`. If no match, creates a new `DaiDoi` (and counts it in `createdDaiDoi`).

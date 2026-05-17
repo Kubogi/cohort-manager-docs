@@ -16,9 +16,9 @@ Admin uploads a multi-sheet Excel roster received from a partner school. Each sh
 |---|---|
 | **File format** | `.xls` or `.xlsx`, ≤ 20 MB. Other extensions are rejected by multer's `fileFilter`. |
 | **Sheet ⇒ daiDoi** | Each sheet's name is the battalion name. A sheet literally named `SỐ LƯỢNG` is skipped (it's a summary tab in the operator's template). |
-| **Header row** | Row 5. The parser does not look at it; it's there for the human filling the sheet. |
-| **Data rows** | Row 6 onward. |
-| **Column layout** | Fixed by position: A=STT (skipped), B=`cccd`, C=`maSV`, D=`hoTen`, E=`ngaySinh`, F=`lop`, G=`nganh`, H=`noiSinh`, I=`gioiTinh` (`"Nam"`/`"Nữ"`), J=`danToc`, K=`soDienThoai`, L=`trangThai` (case-insensitive; falls back to `'Đang học'` if empty or unmatched), M=`ghiChu`. |
+| **Header row** | Auto-detected. The parser scans from row 1 and treats the first row whose A/B/C cells are `STT` / `CCCD` / `Mã SV` (case-insensitive, whitespace trimmed) as the header. Sheets without a matching header are skipped silently. |
+| **Data rows** | The row immediately after the detected header onward. |
+| **Column layout** | Fixed by position: A=STT (skipped), B=`cccd`, C=`maSV`, D=`hoTen`, E=`ngaySinh`, F=`noiSinh`, G=`gioiTinh` (`"Nam"`/`"Nữ"`), H=`danToc`, I=`lop`, J=`nganh`, K=`soDienThoai`, L=`ngayNhapHoc`, M=`ngayVe`, N=`trangThai` (case-insensitive; falls back to `'Đang học'` if empty or unmatched), O=`ghiChu`. |
 | **Date format** | `ngaySinh` accepts an Excel date cell, an Excel date-serial number, or text in `dd/mm/yyyy`, `dd-mm-yyyy`, `dd.mm.yyyy`, or ISO. |
 
 The import column layout is **different** from the export templates in `backend/forms/Hệ {ĐH,CĐ}/`. Don't try to reuse a grade-book template as an import file; ask the operator for their import template.
@@ -35,8 +35,8 @@ The import column layout is **different** from the export templates in `backend/
    - Opens the workbook with `xlsx` (SheetJS).
    - Iterates each sheet. Skips `SỐ LƯỢNG`. For each remaining sheet:
      a. Resolves sheet name → existing `DaiDoi` under the chosen `khoa`. If none exists, creates one and increments `createdDaiDoi`.
-     b. Iterates rows from row 6 onward. For each row:
-        - Reads columns B–M. Skips entirely empty rows.
+     b. Locates the header row (first row whose A/B/C cells are `STT` / `CCCD` / `Mã SV`, case-insensitive) and iterates the rows after it. For each row:
+        - Reads columns B–O. Skips entirely empty rows.
         - Normalizes `gioiTinh` (`"Nam"` → `true`, `"Nữ"` → `false`).
         - Parses `ngaySinh`.
         - Looks up an existing student by `{ maSV, hoTen, ngaySinh }`. If found → counts as duplicate, skips.
@@ -67,7 +67,7 @@ The import column layout is **different** from the export templates in `backend/
 
 ## Manual test recipe
 
-- [ ] Prepare a small `.xlsx` with two sheets: `D1` (3 valid rows) and `SỐ LƯỢNG` (an extra summary sheet). Use header on row 5; data from row 6.
+- [ ] Prepare a small `.xlsx` with two sheets: `D1` (3 valid rows) and `SỐ LƯỢNG` (an extra summary sheet). Put the `STT / CCCD / Mã SV / …` header on any row you like — the parser auto-detects it; data follows on the next row.
 - [ ] Open Cơ sở dữ liệu sinh viên → Nhập từ Excel → pick khoa K47, upload.
 - [ ] Expected response: `inserted: 3, duplicates: 0, createdDaiDoi: 1, errors: []`.
 - [ ] Reload the page; confirm 3 new students appear under daiDoi `D1` in `khoa K47`. `SỐ LƯỢNG` is absent.

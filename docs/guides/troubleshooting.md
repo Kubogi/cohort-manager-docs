@@ -80,9 +80,9 @@ MONGO_URI2=mongodb://localhost:27017/[DB_NAME_2]
 
 ### Excel import says "0 inserted, 0 duplicates, 0 errors"
 
-**Why:** Either the workbook had no data rows on any sheet (header on row 5, data starts row 6), or every sheet's name was `SỐ LƯỢNG` (skipped).
+**Why:** Either no sheet contained the auto-detected header row (the parser looks for a row whose A/B/C cells are `STT`, `CCCD`, `Mã SV`, case-insensitive), every sheet's name was `SỐ LƯỢNG` (skipped), or the rows below the header were entirely empty.
 
-**Fix:** Open the workbook in Excel, confirm row 6 onwards has data, confirm sheets are named after battalions (`D1`, `D2`, …), not the literal `SỐ LƯỢNG`.
+**Fix:** Open the workbook in Excel. Confirm at least one sheet has a header row with `STT / CCCD / Mã SV / …` and data immediately below. Confirm sheet names are battalion names (`D1`, `D2`, …), not the literal `SỐ LƯỢNG`.
 
 ### Excel import created a battalion I didn't expect
 
