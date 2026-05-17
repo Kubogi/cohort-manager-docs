@@ -11,6 +11,7 @@ This guide assumes you have root or sudo access on a fresh Ubuntu host with a pu
 
 For local setup, see [`getting-started.md`](getting-started.md).
 For environment variables, see [`environment-variables.md`](environment-variables.md).
+For the **automated** push-to-deploy workflow that runs after this one-time setup is in place, see [`ci-deploy.md`](ci-deploy.md).
 
 ## 1. Install system packages
 
@@ -111,8 +112,9 @@ sudo -iu deploy
 ## 4. Clone and install
 
 ```bash
-mkdir -p ~/apps
-cd ~/apps
+sudo mkdir -p /var/www
+sudo chown "$USER":"$USER" /var/www
+cd /var/www
 git clone <your-repo-url> student-management
 cd student-management
 
@@ -158,10 +160,10 @@ pm2 start ecosystem.config.js
 pm2 save
 pm2 startup systemd       # follow the printed sudo command
 pm2 status
-pm2 logs student-mgmt-api --lines 100
+pm2 logs site-backend2 --lines 100
 ```
 
-PM2 will log to `~/.pm2/logs/student-mgmt-api-out.log` and `…-error.log` by default. Set up log rotation:
+PM2 will log to `~/.pm2/logs/site-backend2-out.log` and `…-error.log` by default. Set up log rotation:
 
 ```bash
 pm2 install pm2-logrotate
@@ -169,14 +171,14 @@ pm2 set pm2-logrotate:max_size 50M
 pm2 set pm2-logrotate:retain 14
 ```
 
-> **Reload vs restart.** `pm2 reload student-mgmt-api` drains existing requests before swapping; `pm2 restart` is hard-stop. Always prefer reload for production. With `instances: 1` (the default in our config) reload still has a brief interruption — to truly avoid it, raise `instances` and add a SIGINT handler in `server.js`. The current `server.js` has no graceful-shutdown handler, so reload is "best effort, fast".
+> **Reload vs restart.** `pm2 reload site-backend2` drains existing requests before swapping; `pm2 restart` is hard-stop. Always prefer reload for production. With `instances: 1` (the default in our config) reload still has a brief interruption — to truly avoid it, raise `instances` and add a SIGINT handler in `server.js`. The current `server.js` has no graceful-shutdown handler, so reload is "best effort, fast".
 
 ## 7. Configure Nginx
 
 Copy the example server block from [`nginx.conf.example`](../../nginx.conf.example) into `/etc/nginx/sites-available/student-management`:
 
 ```bash
-sudo cp /home/deploy/apps/student-management/nginx.conf.example \
+sudo cp /var/www/student-management/nginx.conf.example \
         /etc/nginx/sites-available/student-management
 sudo nano /etc/nginx/sites-available/student-management   # edit server_name, root, etc.
 sudo ln -s /etc/nginx/sites-available/student-management /etc/nginx/sites-enabled/
@@ -186,7 +188,7 @@ sudo systemctl reload nginx
 
 The key pieces of that file:
 
-- `root /home/deploy/apps/student-management/frontend/dist;` — Nginx serves the SPA build directly.
+- `root /var/www/student-management/frontend/dist;` — Nginx serves the SPA build directly.
 - `try_files $uri $uri/ /index.html;` — for client-side routing fallback (react-router hash routing actually does not need this, but it's safe and supports future history-mode routing).
 - `location /api/ { proxy_pass http://127.0.0.1:3000; … }` — backend API.
 - `client_max_body_size 110M;` — required for học-liệu uploads. The default 1 MB rejects uploads that the backend would otherwise accept.
@@ -233,25 +235,30 @@ Then open `https://your-domain/` in a browser, log in as the admin you created i
 ### Restart the backend
 
 ```bash
-pm2 reload student-mgmt-api
+pm2 reload site-backend2
 ```
 
 ### Tail logs
 
 ```bash
-pm2 logs student-mgmt-api --lines 100
+pm2 logs site-backend2 --lines 100
 sudo journalctl -u nginx -f
 sudo tail -f /var/log/mongodb/mongod.log
 ```
 
 ### Deploy a new version
 
+In normal operation this is automated — push to `main` and GitHub Actions runs the deploy via SSH. See [`ci-deploy.md`](ci-deploy.md).
+
+The manual equivalent (e.g. when the workflow is disabled or you're testing on a branch):
+
 ```bash
-cd ~/apps/student-management
+cd /var/www/student-management
 git pull
 cd backend && npm ci --omit=dev && cd ..
 cd frontend && npm ci && npm run build && cd ..
-pm2 reload student-mgmt-api
+pm2 reload site-backend2
+sudo systemctl restart nginx
 ```
 
 (`frontend/dist` is generated at build time, so the Nginx static root automatically picks up the new bundle as soon as `npm run build` writes it.)
@@ -259,12 +266,12 @@ pm2 reload student-mgmt-api
 ### Roll back
 
 ```bash
-cd ~/apps/student-management
+cd /var/www/student-management
 git log --oneline -10            # find the previous good commit
 git checkout <sha>
 cd backend && npm ci --omit=dev && cd ..
 cd frontend && npm ci && npm run build && cd ..
-pm2 reload student-mgmt-api
+pm2 reload site-backend2
 ```
 
 For a fully reversible deploy strategy, run two checkouts (`current/` and `previous/`) with a symlink in `nginx.conf` pointing at one of them.
@@ -276,7 +283,7 @@ See [`backups.md`](backups.md). Short version:
 ```bash
 mongodump --uri="$MONGO_URI"  --out=/backups/$(date +%F)
 mongodump --uri="$MONGO_URI2" --out=/backups/$(date +%F)-secondary
-rsync -a /home/deploy/apps/student-management/backend/uploads/ /backups/uploads/$(date +%F)/
+rsync -a /var/www/student-management/backend/uploads/ /backups/uploads/$(date +%F)/
 ```
 
 ## Variants
@@ -302,4 +309,4 @@ If the frontend is served from a CDN and the API from a different host, set `VIT
 | Nginx 413 on hoc-lieu uploads | `client_max_body_size` is too small. Bump it in the server block and reload Nginx. |
 | Browser shows the SPA but every API call 401s after refresh | `VITE_API_URL` doesn't match the actual proxy. Check the Network tab; fix `.env`; **rebuild** the frontend (`npm run build`). |
 | `Certbot renew` fails | DNS no longer points at the VPS, or port 80 is blocked. Restore both before the cert expires. |
-| Disk usage climbing fast | `du -sh ~/apps/student-management/backend/uploads/*` — the `học liệu` drives may be near the 3 GB cap. The cap is per-drive and per-app; the host filesystem has no automatic limit. |
+| Disk usage climbing fast | `du -sh /var/www/student-management/backend/uploads/*` — the `học liệu` drives may be near the 3 GB cap. The cap is per-drive and per-app; the host filesystem has no automatic limit. |
