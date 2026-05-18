@@ -1,9 +1,7 @@
 # DaiDoi (Platoon) Schema
 
-**Source**: [backend/src/models/DaiDoi.js](../../backend/src/models/DaiDoi.js)
-
-**Collection**: `dai_doi`
-
+**Source**: [backend/src/models/DaiDoi.js](../../backend/src/models/DaiDoi.js)  
+**Collection**: `dai_doi`  
 **Last Verified**: 2026-05-16
 
 ---
@@ -117,6 +115,7 @@ Truong (Partner Institution)
 2. **Parallel Arrays**: Four arrays must maintain equal lengths (validated)
 3. **Compound Unique Index**: (ten, khoa, donViLienKet) ensures unique platoon names within context
 4. **Used as Organizational Level**: Between Khoa and SinhVien
+5. **Rename cascade**: Renaming `ten` triggers a post-save/post-findOneAndUpdate hook that recomputes `SinhVien.daiDoiSortKey` for every student in this đại đội. The parser strips a leading `c`/`C` then takes the leading digit run (`"c11"` → `11`), so renaming `c11` → `C11` is a no-op for ordering. See [SinhVien](SinhVien.md) and [sortKeys.js](../../../backend/src/utils/sortKeys.js).
 
 ---
 

@@ -16,7 +16,9 @@ Look up grade records from the **primary** DB's `SinhVien` collection.
 
 **`ngaySinh` matching**: value is parsed as a date and matched as a 24-hour date range on the `ngaySinh` Date field (not a string compare).
 
-**Response**: `{ data: GradeRow[] }` — no `meta` field.
+**Response**: `{ data: GradeRow[], meta: { total, page, limit } }`. `stt` reflects the row's position in the full result set, not within the page.
+
+**Default sort**: canonical student ordering — `{ khoaSortKey: 1, daiDoiSortKey: 1, _id: 1 }`. Within each `(khoa, daiDoi)` group rows appear in insertion order. See [SinhVien get-list](../sinh-vien/get-list.md) for the meaning of each key.
 
 Each `GradeRow`:
 ```json
@@ -50,7 +52,11 @@ Look up certificate records from the **secondary** cluster's `students` collecti
 
 **`ngaySinh` matching**: string compare against `ngay_sinh` as stored in the secondary DB (format depends on source ingestion, e.g. `"03/04/2000"`).
 
-**Response**: `{ data: CertificateRow[] }` — no `meta` field. Rows are snake_case Vietnamese — see the [CertificateLookup schema](../../../backend/schemas/CertificateLookup.md) for the field list.
+**Response**: `{ data: CertificateRow[], meta: { total, page, limit } }`. Rows are snake_case Vietnamese — see the [CertificateLookup schema](../../../backend/schemas/CertificateLookup.md) for the field list.
+
+**Default sort**: `{ ho_va_ten: 1, ma_sinh_vien: 1, _id: 1 }` — unchanged. The certificate-lookup mirror DB has a different schema with no `khoa` / `daiDoi` / `tenRieng` fields, so the canonical student ordering does not apply here.
+
+**Perf caveat**: the external read-only mirror collection has no indexes on the filtered fields. `countDocuments` + `skip`/`limit` each scan the matched set. Acceptable at current volumes; flagged for an index migration before scale.
 
 ---
 
@@ -63,7 +69,9 @@ Both endpoints take the same JSON body, validated by `traCuuLookupSchema`:
   "maSV":     "<string, optional>",
   "truong":   "<24-hex ObjectId, optional>",
   "hoTen":    "<string, optional>",
-  "ngaySinh": "<dd/mm/yyyy string, optional>"
+  "ngaySinh": "<dd/mm/yyyy string, optional>",
+  "page":     "<number, optional, default 1>",
+  "limit":    "<number, optional, default 50, max 500>"
 }
 ```
 

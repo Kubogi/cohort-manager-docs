@@ -1,9 +1,7 @@
 # SinhVien (Student) Schema
 
 **Source**: [backend/src/models/sinhVien.js](../../../backend/src/models/sinhVien.js)
-
 **Collection**: `sinh_vien`
-
 **Last verified**: 2026-05-16
 
 ---
@@ -38,6 +36,8 @@ Student records in the system. Each student belongs to a class (lop), platoon (d
 | ghiChuYTe | String | No | No | default: `''` | Free-text medical note shown alongside `trangThaiSucKhoe` in the health-record UI. |
 | trangThaiSucKhoe | String | No | No | - | Health status summary |
 | diem | DiemSubdocument[] | No | No | Embedded array | Grades (NOT separate collection) |
+| khoaSortKey | Number | No | No | default: `Number.MAX_SAFE_INTEGER`, indexed | **Denormalized sort key.** `Khoa.ten` parsed as a number (`"K47"` → `47`, `"169"` → `169`). Rows whose khoa is unknown or has no digits sort last. Automatically resolved on save/update of `khoa`; cascaded by `Khoa.post('save')` and `Khoa.post('findOneAndUpdate')` when a Khoa is renamed. |
+| daiDoiSortKey | Number | No | No | default: `Number.MAX_SAFE_INTEGER`, indexed | **Denormalized sort key.** `DaiDoi.ten` with leading `c`/`C` (and any other non-digit prefix) stripped, then parsed as a number (`"c11"` → `11`). Same hook chain as `khoaSortKey`. |
 | createdAt | Date | Auto | No | - | Document creation timestamp |
 | updatedAt | Date | Auto | No | - | Document last update timestamp |
 
@@ -90,6 +90,11 @@ tbMon = thuongXuyen * 0.1 + mieng * 0.1 + giuaHP * 0.2 + hetHP * 0.6
 | Fields | Type | Unique | Sparse |
 |--------|------|--------|--------|
 | { maSV: 1, hoTen: 1, ngaySinh: 1 } | Compound | Yes | Yes |
+| { khoaSortKey: 1, daiDoiSortKey: 1, _id: 1 } | Compound | No | No |
+| { khoaSortKey: 1 } | Single | No | No |
+| { daiDoiSortKey: 1 } | Single | No | No |
+
+The compound sort-key index backs the canonical student ordering applied by every list endpoint and Excel export (see [pagination convention](../../frontend/conventions/pagination.md)). Within a `(khoa, daiDoi)` group, `_id` provides insertion-order ordering. The single-field indexes support filter queries that pin a khoa or đại đội before sorting within.
 
 ---
 
@@ -109,6 +114,7 @@ tbMon = thuongXuyen * 0.1 + mieng * 0.1 + giuaHP * 0.2 + hetHP * 0.6
 4. **Compound Unique Index**: Sparse index on (maSV, hoTen, ngaySinh) - only enforced when all three fields exist
 5. **Auto-calculation**: `tbMon` in grades is auto-calculated by pre-validate hook - do not set manually
 6. **No Required Fields**: All fields are optional in schema definition
+7. **Denormalized sort keys**: `khoaSortKey` and `daiDoiSortKey` are derived from the referenced `Khoa.ten` / `DaiDoi.ten`. They are kept in sync by Mongoose hooks (`pre('save')`, `pre('insertMany')`, `pre('findOneAndUpdate'/'updateOne'/'updateMany')`) plus cascading post-hooks on Khoa/DaiDoi when those documents are renamed. The within-`(khoa, daiDoi)` order is plain `_id` ascending — insertion order, since Mongo generates sequential ObjectIds for `insertMany` and any later `create()`. Existing data is backfilled by [`backend/src/scripts/backfill-student-sort-keys.js`](../../../backend/src/scripts/backfill-student-sort-keys.js). Helpers live in [`backend/src/utils/sortKeys.js`](../../../backend/src/utils/sortKeys.js).
 
 ---
 

@@ -1,9 +1,7 @@
 # Khoa (Course/Department) Schema
 
-**Source**: [backend/src/models/Khoa.js](../../backend/src/models/Khoa.js)
-
-**Collection**: `khoa`
-
+**Source**: [backend/src/models/Khoa.js](../../backend/src/models/Khoa.js)  
+**Collection**: `khoa`  
 **Last Verified**: 2026-05-16
 
 ---
@@ -61,6 +59,7 @@ Truong (Partner Institution)
 3. **Unique Name**: `ten` is unique when present (sparse index)
 4. **Array Reference**: `daiDoi` is an array of ObjectId references, not single reference
 5. **Used as Organizational Level**: Above DaiDoi (platoon)
+6. **Rename cascade**: Renaming `ten` triggers a post-save/post-findOneAndUpdate hook that recomputes `SinhVien.khoaSortKey` for every student in this khoa. This keeps the canonical student ordering in sync (see [SinhVien](SinhVien.md) and [sortKeys.js](../../../backend/src/utils/sortKeys.js)). The numeric parse keeps `"K47"` → `47` even if the prefix changes — only digit changes affect ordering.
 
 ---
 

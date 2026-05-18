@@ -1,13 +1,9 @@
 # GET /api/sinh-vien
 
 **Endpoint**: `GET /api/sinh-vien`  
-
 **Authentication**: ✅ Required  
-
 **Roles**: admin, staff, viewer, teacher
-
 **Unit Scoping**: ✅ Applied (staff: `allowedUnits`; teacher: `teacherScope`)
-
 **Last Verified**: 2026-05-16
 
 ---
@@ -45,6 +41,18 @@ Authorization: Bearer <access_token>
 | noiSinh | string | - | Regex filter on birthplace |
 | soDienThoai | string | - | Regex filter on phone number |
 | lop | string | - | Regex filter on class designation |
+
+**Default sort** (canonical student ordering — applied unconditionally; client-supplied `sort` is ignored):
+
+```
+{ khoaSortKey: 1, daiDoiSortKey: 1, _id: 1 }
+```
+
+- `khoaSortKey` — `Khoa.ten` parsed as a number (`"K47"` → `47`, `"169"` → `169`). Missing/unparseable → `Number.MAX_SAFE_INTEGER` (sorts last).
+- `daiDoiSortKey` — `DaiDoi.ten` with leading `c`/`C` (and any other non-digit prefix) stripped, then parsed as a number (`"c11"` → `11`).
+- `_id` — within each `(khoa, daiDoi)` group, students appear in insertion order. Mongo generates sequential ObjectIds for `insertMany`, so Excel row order is preserved when a roster is imported; subsequent imports and manual additions get newer ObjectIds and append after the previous batch.
+
+Stable for pagination. The two denormalized sort keys are kept in sync by Mongoose hooks; see [SinhVien schema](../../../backend/schemas/SinhVien.md).
 
 ---
 

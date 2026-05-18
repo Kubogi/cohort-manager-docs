@@ -2,10 +2,8 @@
 
 **Endpoint**: `GET /api/diem`  
 **Authentication**: ✅ Required  
-
 **Roles**: admin, staff, viewer, teacher
 **Unit Scoping**: ✅ Applied (staff: `allowedUnits`; teacher: `teacherScope`, via parent SinhVien)  
-
 **Last Verified**: 2025-12-31
 
 ---
@@ -38,6 +36,12 @@ Authorization: Bearer <access_token>
 | maSV | string | - | Regex filter on student ID |
 | hoTen | string | - | Regex filter on student name |
 | lop | string | - | Regex filter on class designation |
+
+**Default sort**:
+- When `mon` is provided: rows are sorted by the canonical student ordering on the parent students — `{ khoaSortKey: 1, daiDoiSortKey: 1, _id: 1 }`. Within each `(khoa, daiDoi)` group rows appear in insertion order. See [SinhVien get-list](../sinh-vien/get-list.md) for the meaning of each key.
+- When `mon` is not provided: the response shape is grade-centric (one row per embedded grade) and the sort stays `{ _id: -1 }` on the embedded grade documents (newest grade first).
+
+Both are stable for pagination.
 
 ---
 
