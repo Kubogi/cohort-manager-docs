@@ -72,6 +72,9 @@ Grade doesn't exist.
 ### 403 Forbidden
 Only admin/staff roles can update grades.
 
+### 409 Conflict — `SUBJECT_EXEMPT`
+Returned when the targeted grade's `mon` (either the existing value or a new `mon` in the payload) is in `student.monMienHoc`. Clear the exemption first, then retry. Same shape as [POST /api/diem](./post.md#409-conflict--subject_exempt).
+
 ---
 
 ## Related

@@ -6,7 +6,7 @@
 
 **Roles**: admin  
 
-**Last Verified**: 2026-05-16
+**Last Verified**: 2026-05-18
 
 ---
 
@@ -42,7 +42,8 @@ Authorization: Bearer <access_token>
   "ngayNhapHoc": "2023-09-01",
   "trangThai": "Đang học",
   "ghiChu": "",
-  "trangThaiSucKhoe": "Bình thường"
+  "trangThaiSucKhoe": "Bình thường",
+  "monMienHoc": ["Quân sự chung"]
 }
 ```
 
@@ -58,8 +59,9 @@ All other fields from SinhVien schema are optional.
 
 **Important**: `gioiTinh` is **Boolean** (true=Male, false=Female), not string.
 
-- `trangThai` (string) — Valid values: `'Đang học'`, `'Hoãn học'`, `'Thôi học'`, `'Đình chỉ'`, `'Miễn học'`, `'Không tham gia học'` (enforced by Joi validator).
+- `trangThai` (string) — Valid values: `'Đang học'`, `'Hoãn học'`, `'Thôi học'`, `'Đình chỉ'`, `'Học ghép'`, `'Miễn học'`, `'Không tham gia học'` (enforced by Joi validator). `'Học ghép'` suppresses the cross-subject `diemTB` summary — see [SinhVien schema](../../../backend/schemas/SinhVien.md#fields).
 - `ghiChuYTe` (string, allow empty, max 2000 chars) — Medical notes.
+- `monMienHoc` (array of strings, default `[]`) — Subjects the student is exempt from. Each entry must be a MON_ENUM value; duplicates rejected. Writes to `/api/diem` for an exempt subject return `409 SUBJECT_EXEMPT`.
 
 ---
 

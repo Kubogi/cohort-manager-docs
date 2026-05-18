@@ -74,6 +74,8 @@ The summary view is read-only — no in-place editing.
 - Every grade write is a Mongo write to **one** `SinhVien` document. Even bulk imports do per-student writes (with a parallel chunk size of 50).
 - `tbMon` is **always** recomputed from the supplied raw scores — you cannot post a custom `tbMon`. Setting `tbMon` directly in a `POST/PATCH` body is silently overwritten by the hook.
 - Grade updates do **not** touch `SinhVien.trangThai` — failing a course does not automatically suspend a student. That's a separate manual decision.
+- **Exempt subjects (`SinhVien.monMienHoc`)** — set via the "Môn miễn học" sub-popup in the student add/edit modal. For each exempt subject, the Nhập điểm row renders dashes in `Thường xuyên / Miệng / Giữa HP / Hết HP / TB môn` and the inputs are non-editable. The diem service (`POST/PATCH /api/diem`, `POST /api/diem/import`) refuses to write grades for an exempt subject — single endpoints return `409 SUBJECT_EXEMPT`; the importer skips the row with a soft error. Exemptions do **not** suppress the cross-subject `diemTB` for other subjects — the average naturally excludes the exempt subject (no `tbMon` was ever written), so a student with 3 graded subjects + 1 exempt averages over the 3 graded ones.
+- **`trangThai === 'Học ghép'`** — per-subject `tbMon` is still computed normally and grade entry remains editable, but the **cross-subject `diemTB` summary is suppressed** to `—` everywhere it appears (Tổng kết cuối khóa table, xếp loại tally). The two mechanisms compose independently: a student that is both `Học ghép` AND has `monMienHoc` exemptions will see per-subject dashes for exempt subjects AND a cross-subject `—` from the status.
 
 ## Failure modes
 

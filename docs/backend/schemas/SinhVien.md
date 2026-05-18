@@ -2,7 +2,7 @@
 
 **Source**: [backend/src/models/sinhVien.js](../../../backend/src/models/sinhVien.js)
 **Collection**: `sinh_vien`
-**Last verified**: 2026-05-16
+**Last verified**: 2026-05-18
 
 ---
 
@@ -31,10 +31,11 @@ Student records in the system. Each student belongs to a class (lop), platoon (d
 | truong | ObjectId | No | No | ref: 'DonViLienKet' | Partner institution (secondary DB) |
 | ngayNhapHoc | Date | No | No | - | Enrollment date |
 | ngayVe | Date | No | No | - | Return/departure date (if applicable) |
-| trangThai | String | No | No | enum: 'Đang học' / 'Hoãn học' / 'Thôi học' / 'Đình chỉ' / 'Miễn học' / 'Không tham gia học' | Current academic status. Mutations are typically driven by the [decision-processing workflow](../../workflows/decision-processing.md). |
+| trangThai | String | No | No | enum: 'Đang học' / 'Hoãn học' / 'Thôi học' / 'Đình chỉ' / 'Học ghép' / 'Miễn học' / 'Không tham gia học' | Current academic status. Mutations are typically driven by the [decision-processing workflow](../../workflows/decision-processing.md). `'Học ghép'` (joined-class) students have per-subject `tbMon` computed normally, but the **cross-subject `diemTB` summary is suppressed** (rendered as `—` in `TongKetCuoiKhoaView` and returned as `''` by the xếp loại tally — they land in `chuaCoDiem`). |
 | ghiChu | String | No | No | - | General notes/comments |
 | ghiChuYTe | String | No | No | default: `''` | Free-text medical note shown alongside `trangThaiSucKhoe` in the health-record UI. |
 | trangThaiSucKhoe | String | No | No | - | Health status summary |
+| monMienHoc | [String] | No | No | enum: MON_ENUM, default: `[]` | Subjects the student is exempt from. **Writes to `SinhVien.diem` for an exempt subject are rejected** by the diem service with `409 SUBJECT_EXEMPT` (covers `POST /api/diem`, `PATCH /api/diem/:id`, and `POST /api/diem/import` — the importer skips exempt rows with a soft error). The Nhập điểm UI renders dashes in place of input cells for exempt rows. Setting/clearing the field is part of the student add/edit modal via the "Môn miễn học" sub-popup. |
 | diem | DiemSubdocument[] | No | No | Embedded array | Grades (NOT separate collection) |
 | khoaSortKey | Number | No | No | default: `Number.MAX_SAFE_INTEGER`, indexed | **Denormalized sort key.** `Khoa.ten` parsed as a number (`"K47"` → `47`, `"169"` → `169`). Rows whose khoa is unknown or has no digits sort last. Automatically resolved on save/update of `khoa`; cascaded by `Khoa.post('save')` and `Khoa.post('findOneAndUpdate')` when a Khoa is renamed. |
 | daiDoiSortKey | Number | No | No | default: `Number.MAX_SAFE_INTEGER`, indexed | **Denormalized sort key.** `DaiDoi.ten` with leading `c`/`C` (and any other non-digit prefix) stripped, then parsed as a number (`"c11"` → `11`). Same hook chain as `khoaSortKey`. |

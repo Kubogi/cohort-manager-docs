@@ -8,7 +8,7 @@
 
 **HTTP Method**: **PATCH** (not PUT)  
 
-**Last Verified**: 2026-05-16
+**Last Verified**: 2026-05-18
 
 ---
 
@@ -39,12 +39,15 @@ Send only the fields you want to update:
 ```json
 {
   "soDienThoai": "0987654321",
-  "trangThai": "Tốt nghiệp",
+  "trangThai": "Thôi học",
   "ngayVe": "2025-06-30"
 }
 ```
 
 All fields from SinhVien schema are **optional** in update.
+
+- `trangThai` accepts `'Học ghép'` (since 2026-05-18) — joins the existing set of allowed values. See [SinhVien schema](../../../backend/schemas/SinhVien.md#fields) for the dash-display semantic.
+- `monMienHoc` accepts an array of MON_ENUM strings (default `[]`); send `[]` to clear all exemptions.
 
 ---
 

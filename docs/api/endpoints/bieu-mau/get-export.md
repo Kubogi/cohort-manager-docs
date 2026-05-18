@@ -8,7 +8,7 @@
 
 **Source**: [bieuMau.route.js](../../../../backend/src/routes/bieuMau.route.js), [bieuMau.controller.js](../../../../backend/src/controllers/bieuMau.controller.js), [bieuMau.service.js](../../../../backend/src/services/bieuMau.service.js), [config/bieuMau.config.js](../../../../backend/src/config/bieuMau.config.js)
 
-**Last verified**: 2026-05-16
+**Last verified**: 2026-05-18 (status filter accepts `'Học ghép'`)
 
 ## Description
 
@@ -30,6 +30,8 @@ GET /api/bieu-mau/export
 ```
 
 `status` accepts a single enum value or a comma-separated list; multi-value is matched via `$in` against `SinhVien.trangThai`. Omitting the param applies no status filter.
+
+Valid enum values: `Đang học`, `Hoãn học`, `Thôi học`, `Đình chỉ`, `Học ghép`, `Miễn học`, `Không tham gia học`.
 
 The route has **no Joi validator**; the service enforces the contract by hand.
 

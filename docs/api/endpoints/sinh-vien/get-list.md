@@ -81,6 +81,7 @@ Stable for pagination. The two denormalized sort keys are kept in sync by Mongoo
       "trangThai": "Đang học",
       "ghiChu": "",
       "trangThaiSucKhoe": "Bình thường",
+      "monMienHoc": [],
       "diem": [],
       "createdAt": "2023-09-01T00:00:00.000Z",
       "updatedAt": "2023-09-01T00:00:00.000Z"

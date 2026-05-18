@@ -88,6 +88,13 @@ Only admin, staff, and teacher roles can create grades. Teachers can only create
 ### 400 Bad Request
 Missing required fields, invalid mon value, or grades out of range.
 
+### 409 Conflict — `SUBJECT_EXEMPT`
+Returned when `student.monMienHoc` includes the requested `mon`. Exempt students are not allowed to accumulate grades for that subject; the cross-subject `diemTB` rollup naturally skips them (per-subject `tbMon` would never be written). Clear the exemption in the student modal first, then retry.
+
+```json
+{ "error": { "code": "SUBJECT_EXEMPT", "message": "Sinh viên này được miễn học môn này" } }
+```
+
 ---
 
 ## Notes
