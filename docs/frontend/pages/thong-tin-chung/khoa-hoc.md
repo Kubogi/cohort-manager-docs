@@ -94,7 +94,7 @@ Source: `TrucVaKiemSoatView.tsx`.
 
 ## Edge cases / gotchas
 
-- **The aligned-arrays editor is strict.** `DaiDoi.pre('validate')` *throws a plain `Error`* (not `HttpError`) if `canBo`, `soQD`, `ngayQD`, `hieuLuc` don't all match in length. The plain Error surfaces as a 500 with no structured code. The modal should prevent this from reaching the server, but if you see a 500 on a DaiDoi save, this is the cause.
+- **The aligned-arrays editor is strict.** `DaiDoi.pre('validate')` *throws a plain `Error`* (not `HttpError`) if `canBo`, `soQD`, `ngayQD`, `hieuLuc`, `tkpk`, `ghiChu` don't all match in length. The plain Error surfaces as a 500 with no structured code. The modal should prevent this from reaching the server, but if you see a 500 on a DaiDoi save, this is the cause.
 - **Cross-khoa daiDoi mistakes.** Creating a daiDoi with `khoa: K47` and then assigning a student from `khoa K48` to it is caught at the SinhVien validator (`daiDoi.khoa` must match `payload.khoa`). The check was added in commit `7840d44`.
 - **Deletion cascades are service-level, not Mongo-level.** Deleting a `Khoa` does not automatically delete its daiDois or students. The cascade in `khoa.service.remove` handles daiDois; whether it cascades to students is implementation-dependent — read the service before relying on it.
 - **`trucQuanYNgay` is always length 2.** It's an array, but the Mongoose default fixes its length. Don't `push` to it.

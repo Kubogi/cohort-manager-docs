@@ -10,7 +10,7 @@ Daily military-duty roster. One row per calendar date.
 
 ### `GET /api/truc-quan-su`
 
-List roster rows.
+List roster rows. **Ordered by `ngay` ascending** (oldest date first).
 
 **Query**: `from` and `to` (ISO dates, optional date range), `page`, `limit` (default: 200).
 
