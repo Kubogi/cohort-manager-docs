@@ -32,7 +32,7 @@ Authorization: Bearer <access_token>
 | daiDoi | string | - | Filter by DaiDoi ID |
 | donViLienKet | string | - | Filter by DonViLienKet ID (school). `truong` is accepted as an alias; `donViLienKet` takes priority. |
 | truong | string | - | Alias for `donViLienKet`. |
-| status | string | - | Filter by status (maps to `trangThai` field) |
+| status | string | - | Filter by `trangThai`. Accepts a single enum value (`"Đang học"`) or a comma-separated list (`"Đang học,Hoãn học"`); multi-value is matched via `$in`. Empty string = no filter. |
 | maSV | string | - | Regex filter on student ID |
 | cccd | string | - | Regex filter on citizen-ID number |
 | hoTen | string | - | Regex filter on full name |

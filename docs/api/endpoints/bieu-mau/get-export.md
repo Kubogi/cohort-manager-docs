@@ -26,7 +26,10 @@ GET /api/bieu-mau/export
   &khoa=<ObjectId>                          (optional filter)
   &daiDoi=<ObjectId>                        (optional filter)
   &truong=<ObjectId>                        (optional filter)
+  &status=<comma-separated trạng thái>      (optional; e.g. "Đang học,Hoãn học")
 ```
+
+`status` accepts a single enum value or a comma-separated list; multi-value is matched via `$in` against `SinhVien.trangThai`. Omitting the param applies no status filter.
 
 The route has **no Joi validator**; the service enforces the contract by hand.
 
@@ -95,6 +98,7 @@ curl -o "Sổ điểm.xlsx" \
 - **`multiByMon` template + no `mon`** = every subject sheet in the template is populated. Useful for full grade books.
 - **`multiByMon` template + specific `mon`** = only that subject's sheet is populated; others are left as the template defines them.
 - **Per-unit scoping applies** — `applyUnitScope` (staff) or `applyTeacherScope` (teacher) filters which students appear. Admin sees all.
+- **`status` is applied before the workbook fill**, so the resulting roster only contains students whose `trangThai` is in the supplied set. Useful for printing rosters of e.g. only `Đang học` students.
 - **`tbMon` is read from the SinhVien.diem subdocument as-is** — the exporter does **not** recompute, so the integer-arithmetic guarantees from the schema hook are preserved.
 - **Empty filter results produce an empty workbook**, not an error. If your students don't appear, check the filters.
 
