@@ -1,11 +1,8 @@
 # Khóa học — Cohort & course management
 
 **Menu path**: Thông tin chung › Khóa học
-
 **Roles**: admin · staff · viewer *(not visible to teacher)*
-
 **Source files**: [`frontend/src/resources/thongTinChung/khoaHoc.tsx`](../../../../frontend/src/resources/thongTinChung/khoaHoc.tsx) + companion folder `khoaHoc/`
-
 **Related API endpoints**:
 - [`/api/khoa-hoc`](../../../api/endpoints/khoa/) — Khoa CRUD
 - [`/api/don-vi/dai-doi`](../../../api/endpoints/don-vi/dai-doi-get-list.md) — DaiDoi CRUD
@@ -37,9 +34,13 @@ For the selected khóa, a flat table of `cán bộ quản lý` assignments — o
 **What it does:**
 - **Thêm khóa** — opens a modal to create a new `Khoa` with `ten` + a starting list of `DaiDoi` names. Cascading: each daiDoi is created with `khoa: <newKhoa._id>`.
 - **Sửa khóa / Xoá khóa** — edits or deletes the selected khóa. Deleting cascades to its daiDois and (in some implementations) its students.
+- **Lọc theo đại đội** — a `SearchableSelect` below the khóa selector scopes the table to one battalion. Empty selection (or "Tìm kiếm" with an empty filter) shows every battalion under the khóa.
+- **Tìm kiếm** — leftmost action button. Re-runs the table query with whatever đại đội filter is currently set.
+- **Nhập excel** — uploads a `Mẫu CB QL` workbook and bulk-creates `CanBoQuanLy` rows, attaching each to its đại đội (by the code in column F) under the selected khóa. See [`workflows/excel-import-cbql.md`](../../../workflows/excel-import-cbql.md).
 - **Thêm đại đội** — adds a new battalion to the current khóa. Validator enforces uniqueness of `(ten, khoa, donViLienKet)`.
 - **Sửa đại đội** — opens a modal that includes the *aligned-arrays* editor for staff assignments: `canBo`, `soQD`, `ngayQD`, `hieuLuc` must all have equal length. The DaiDoi schema's `pre('validate')` hook enforces this at write time; the modal UI prevents you from saving misaligned arrays. The modal lists *all* current assignments for the battalion, including when there are multiple.
 - **Xoá đại đội** — deletes the battalion. Cascade to students depends on service implementation.
+- **Xóa khóa học** — rightmost action button (danger variant). Deletes the entire khóa and all its daiDois + students after a confirmation modal showing the counts.
 
 **What it shows (table columns, left to right):**
 
@@ -60,7 +61,9 @@ A battalion with `N` aligned staff entries produces `N` rows (same `Đại độ
 Source: `TrucVaKiemSoatView.tsx`.
 
 **What it does:**
-- Calendar / list view of `TrucQuanSu` rows (daily duty roster), filtered by date range.
+- List view of `TrucQuanSu` rows (daily duty roster).
+- **Date-range filter** — two `<input type="date">` fields ("Từ ngày" / "Đến ngày") + **Tìm kiếm** + **Xóa lọc** buttons. The filter is passed to `GET /api/truc-quan-su?from=…&to=…`; the backend already supported these query params, this tab now exposes them.
+- **Nhập Excel** — bulk-import from the `trực kiểm soát QS` sheet of a duty-roster workbook. Two rows per day. See [`workflows/excel-import-truc-quan-su.md`](../../../workflows/excel-import-truc-quan-su.md).
 - Create or edit a row for a specific date: assign `trucLanhDao`, `trucChiHuy`, `truongKhungNhaD1D2`, `trucBan`, `trucQuanYNgay[0..1]`, `trucQuanYDem`, `trucDienNuoc`, `donViKiemSoatQuanSu`, `ghiChu`.
 
 **What it shows:**

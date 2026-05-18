@@ -59,6 +59,43 @@ Remove a row.
 
 **Response**: `204 No Content`.
 
+### `POST /api/truc-quan-su/import`
+
+**Roles**: `admin`, `staff` only.
+**Content-Type**: `multipart/form-data`.
+
+Bulk-import the duty roster from an Excel file. The importer picks the first worksheet whose name, lowercased and stripped of whitespace, contains `trực` or `truc` (e.g. `"trực kiểm soát QS"`). No matching sheet → `400 NO_TRUC_SHEET`.
+
+**Sheet layout**: header on rows 1–4 (merged), data starts at **row 5**, **2 rows per entry**:
+
+| Col | Field | Row 1 of pair | Row 2 of pair |
+|---|---|---|---|
+| A | day-of-week / date | `"Thứ Hai"` | `"12/29/25"` (M/D/YY); also accepted as a real Date cell |
+| B–E, G–J | name fields | name | concatenated with row 1 via a space (handles names that wrap across the two rows) |
+| F | `trucQuanYNgay[0]` / `[1]` | first quân-y day-shift person | **separate** second quân-y day-shift person |
+
+`ngay` is taken from row 2 col A. Pairs with an unparseable date are skipped silently (this lets the importer tolerate trailing blank rows).
+
+**Form fields**:
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `file` | File | Yes | `.xls` / `.xlsx`, max 20 MB |
+
+**Response 200**:
+
+```json
+{
+  "data": {
+    "inserted": 42,
+    "duplicates": 0,
+    "errors": []
+  }
+}
+```
+
+Duplicate `ngay` (already in DB or repeated in the file) is counted under `duplicates` rather than failing the request. The schema's unique index on `ngay` is what backs this guarantee.
+
 ## Cross-cutting notes
 
 - **`trucQuanYNgay` is always length 2.** Don't push more entries; replace the array verbatim.
