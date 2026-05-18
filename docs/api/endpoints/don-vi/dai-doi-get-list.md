@@ -2,10 +2,8 @@
 
 **Endpoint**: `GET /api/don-vi/dai-doi`  
 **Authentication**: ✅ Required  
-
 **Roles**: admin, staff, viewer, teacher  
 **Unit Scoping**: ✅ Applied (staff: `allowedUnits`; teacher: `teacherScope`)  
-
 **Last Verified**: 2026-01-02
 
 ---
@@ -60,6 +58,8 @@ Authorization: Bearer <access_token>
           "ketThuc": "2024-12-31T00:00:00.000Z"
         }
       ],
+      "tkpk": ["Trưởng khung"],
+      "ghiChu": ["Phụ trách khung D2"],
       "createdAt": "2023-01-15T00:00:00.000Z",
       "updatedAt": "2023-01-15T00:00:00.000Z"
     }

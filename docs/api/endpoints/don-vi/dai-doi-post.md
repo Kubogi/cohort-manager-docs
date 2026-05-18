@@ -2,9 +2,7 @@
 
 **Endpoint**: `POST /api/don-vi/dai-doi`  
 **Authentication**: ✅ Required  
-
 **Roles**: admin  
-
 **Last Verified**: 2026-05-16
 
 ---
@@ -41,7 +39,9 @@ Authorization: Bearer <access_token>
       "batDau": "2024-01-15",
       "ketThuc": "2024-12-31"
     }
-  ]
+  ],
+  "tkpk": ["Trưởng khung"],
+  "ghiChu": ["Phụ trách khung D2"]
 }
 ```
 
@@ -60,8 +60,10 @@ Authorization: Bearer <access_token>
 - `soQD` (array of strings) - Decision numbers
 - `ngayQD` (array of ISO date strings) - Decision dates
 - `hieuLuc` (array of objects) - Validity periods with `batDau` and `ketThuc` dates
+- `tkpk` (array of strings) - Per-assignment TK/PK role. Each item must be `""`, `"Trưởng khung"`, or `"Phó khung"`.
+- `ghiChu` (array of strings, max 500 chars each) - Per-assignment free-text notes.
 
-**IMPORTANT**: Arrays `canBo`, `soQD`, `ngayQD`, and `hieuLuc` must have equal lengths (validated by schema).
+**IMPORTANT**: Arrays `canBo`, `soQD`, `ngayQD`, `hieuLuc`, `tkpk`, and `ghiChu` must have equal lengths (validated by schema).
 
 ---
 
@@ -88,6 +90,8 @@ Authorization: Bearer <access_token>
         "ketThuc": "2024-12-31T00:00:00.000Z"
       }
     ],
+    "tkpk": ["Trưởng khung"],
+    "ghiChu": ["Phụ trách khung D2"],
     "createdAt": "2025-12-31T10:00:00.000Z",
     "updatedAt": "2025-12-31T10:00:00.000Z"
   }

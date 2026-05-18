@@ -2,7 +2,7 @@
 
 **Source**: [backend/src/models/DaiDoi.js](../../backend/src/models/DaiDoi.js)  
 **Collection**: `dai_doi`  
-**Last Verified**: 2026-05-16
+**Last Verified**: 2026-05-18
 
 ---
 
@@ -10,7 +10,7 @@
 
 Represents a DaiDoi (platoon) within a Khoa (course).
 
-**IMPORTANT**: Contains complex parallel array structure (canBo, soQD, ngayQD, hieuLuc) that must maintain equal lengths.
+**IMPORTANT**: Contains complex parallel array structure (canBo, soQD, ngayQD, hieuLuc, tkpk, ghiChu) that must maintain equal lengths.
 
 ---
 
@@ -20,13 +20,15 @@ Represents a DaiDoi (platoon) within a Khoa (course).
 |-------|------|----------|-------------|
 | ten | String | Yes | Platoon name (e.g. "Đại đội 1", "DD2") |
 | khoa | ObjectId | No | Course reference |
-| donViLienKet | ObjectId | No | Partner institution reference |
+| donViLienKet | ObjectId | **Yes** | Partner institution reference. Every DaiDoi has exactly one DonViLienKet — see invariant below. |
 | ngayBatDau | Date | No | Platoon start date |
 | ngayKetThuc | Date | No | Platoon end date |
 | canBo | ObjectId[] | No | Array of staff references (aligned) |
 | soQD | String[] | No | Array of decision numbers (aligned) |
 | ngayQD | Date[] | No | Array of decision dates (aligned) |
 | hieuLuc | IHieuLuc[] | No | Array of validity periods (aligned) |
+| tkpk | String[] | No | Array of TK/PK roles per assignment (aligned). Enum: `''`, `'Trưởng khung'`, `'Phó khung'`. |
+| ghiChu | String[] | No | Array of per-assignment free-text notes (aligned, max 500 chars each). Distinct from the person-level `CanBoQuanLy.ghiChu` field — that one is set by the Excel import and shared across all assignments. |
 | quanSo | Number | No | Platoon strength/headcount |
 | createdAt | Date | Auto | Document creation timestamp |
 | updatedAt | Date | Auto | Document last update timestamp |
@@ -46,13 +48,15 @@ Represents a DaiDoi (platoon) within a Khoa (course).
 
 ## Parallel Array Structure
 
-**CRITICAL**: Four arrays (canBo, soQD, ngayQD, hieuLuc) must maintain equal lengths.
+**CRITICAL**: Six arrays (canBo, soQD, ngayQD, hieuLuc, tkpk, ghiChu) must maintain equal lengths.
 
 Each index represents one management assignment:
 - canBo[i] = staff member
 - soQD[i] = decision number for that assignment
 - ngayQD[i] = date of that decision
 - hieuLuc[i] = validity period for that assignment
+- tkpk[i] = TK/PK role for that assignment (`''` | `'Trưởng khung'` | `'Phó khung'`)
+- ghiChu[i] = per-assignment note for that assignment
 
 ### Example
 
@@ -64,13 +68,15 @@ Each index represents one management assignment:
   hieuLuc: [
     { batDau: Date("2024-01-15"), ketThuc: Date("2024-05-31") },
     { batDau: Date("2024-06-01"), ketThuc: Date("2024-12-31") }
-  ]
+  ],
+  tkpk: ["Trưởng khung", "Phó khung"],
+  ghiChu: ["Phụ trách khung D2", ""]
 }
 ```
 
 This represents two management assignments:
-- staff1 assigned by QĐ-001/2024 on 2024-01-15, valid until 2024-05-31
-- staff2 assigned by QĐ-002/2024 on 2024-06-01, valid until 2024-12-31
+- staff1 assigned by QĐ-001/2024 on 2024-01-15 as Trưởng khung with the note "Phụ trách khung D2", valid until 2024-05-31
+- staff2 assigned by QĐ-002/2024 on 2024-06-01 as Phó khung, valid until 2024-12-31
 
 ---
 
@@ -84,9 +90,9 @@ This represents two management assignments:
 
 ## Validation
 
-Pre-validate hook checks the four parallel arrays (canBo, soQD, ngayQD, hieuLuc). The validator passes if ALL four arrays are empty, OR if every non-empty array shares the same length. A mix of empty and non-empty arrays passes as long as all non-empty ones agree on length.
+Pre-validate hook checks the six parallel arrays (canBo, soQD, ngayQD, hieuLuc, tkpk, ghiChu). The validator passes if ALL six arrays are empty, OR if every non-empty array shares the same length. A mix of empty and non-empty arrays passes as long as all non-empty ones agree on length — this is what lets legacy DaiDoi docs predating `tkpk`/`ghiChu` continue to validate on resave.
 
-Throws error: "canBo, soQD, ngayQD, and hieuLuc must have the same length"
+Throws error: "canBo, soQD, ngayQD, hieuLuc, tkpk, and ghiChu must have the same length"
 
 ---
 
@@ -111,11 +117,21 @@ Truong (Partner Institution)
 
 ## Important Notes
 
-1. **Only Required Field**: `ten` is the only required field
-2. **Parallel Arrays**: Four arrays must maintain equal lengths (validated)
+1. **Required Fields**: `ten` and `donViLienKet` are required. Every DaiDoi must be attached to exactly one DonViLienKet — see the invariant below.
+2. **Parallel Arrays**: Six arrays must maintain equal lengths (validated)
 3. **Compound Unique Index**: (ten, khoa, donViLienKet) ensures unique platoon names within context
 4. **Used as Organizational Level**: Between Khoa and SinhVien
 5. **Rename cascade**: Renaming `ten` triggers a post-save/post-findOneAndUpdate hook that recomputes `SinhVien.daiDoiSortKey` for every student in this đại đội. The parser strips a leading `c`/`C` then takes the leading digit run (`"c11"` → `11`), so renaming `c11` → `C11` is a no-op for ordering. See [SinhVien](SinhVien.md) and [sortKeys.js](../../../backend/src/utils/sortKeys.js).
+
+---
+
+## Invariant: every DaiDoi has exactly one DonViLienKet
+
+The `donViLienKet` reference is required at both the schema layer (`required: true`) and the create validator (`daiDoiCreateSchema` in [donVi.validator.js](../../../backend/src/validators/donVi.validator.js)). The Excel student importer ([sinhVien.service.js](../../../backend/src/services/sinhVien.service.js)) refuses to run without a `truong` body field and passes it into every auto-created DaiDoi.
+
+This invariant is what makes `(khoa, truong) → DaiDoi[]` queries reliable — both the **Tổng kết cuối khóa** export and the partner-school dropdown rely on it. Without the invariant, an auto-created DaiDoi could exist with `donViLienKet: null` and silently disappear from those queries.
+
+Existing data is backfilled by [`backend/src/scripts/backfill-daidoi-donvi.js`](../../../backend/src/scripts/backfill-daidoi-donvi.js), which derives the value from the students referencing each DaiDoi. Run it once on each environment before deploying the `required: true` flip.
 
 ---
 
@@ -127,7 +143,7 @@ Truong (Partner Institution)
 - ❌ tenDaiDoi (platoon name) - Actual field is just "ten", not "tenDaiDoi"
 
 **COMPLEX STRUCTURES NOT DOCUMENTED**:
-- ✅ Parallel arrays (canBo, soQD, ngayQD, hieuLuc) with validation
+- ✅ Parallel arrays (canBo, soQD, ngayQD, hieuLuc, tkpk, ghiChu) with validation
 - ✅ donViLienKet reference
 - ✅ quanSo field
 

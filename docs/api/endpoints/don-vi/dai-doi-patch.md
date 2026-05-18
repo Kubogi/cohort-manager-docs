@@ -2,10 +2,8 @@
 
 **Endpoint**: `PATCH /api/don-vi/dai-doi/:id`  
 **Authentication**: ✅ Required  
-
 **Roles**: admin  
 **HTTP Method**: **PATCH** (not PUT)  
-
 **Last Verified**: 2026-05-16
 
 ---
@@ -49,7 +47,9 @@ Authorization: Bearer <access_token>
       "batDau": "2024-06-01",
       "ketThuc": "2025-06-30"
     }
-  ]
+  ],
+  "tkpk": ["Trưởng khung", "Phó khung"],
+  "ghiChu": ["Phụ trách khung D2", ""]
 }
 ```
 
@@ -65,8 +65,10 @@ Authorization: Bearer <access_token>
 - `soQD` (array of strings)
 - `ngayQD` (array of ISO date strings)
 - `hieuLuc` (array of validity period objects)
+- `tkpk` (array of strings) - per-assignment TK/PK role (`""` | `"Trưởng khung"` | `"Phó khung"`)
+- `ghiChu` (array of strings, max 500 chars each) - per-assignment notes
 
-**Note**: When updating parallel arrays, all four arrays (canBo, soQD, ngayQD, hieuLuc) must maintain equal lengths.
+**Note**: When updating parallel arrays, all six arrays (canBo, soQD, ngayQD, hieuLuc, tkpk, ghiChu) must maintain equal lengths.
 
 ---
 
