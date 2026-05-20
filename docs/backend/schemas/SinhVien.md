@@ -28,10 +28,10 @@ Student records in the system. Each student belongs to a class (lop), platoon (d
 | lop | String | No | No | - | Class designation/name |
 | daiDoi | ObjectId | No | No | ref: 'DaiDoi' | Platoon reference |
 | khoa | ObjectId | No | No | ref: 'Khoa' | Course reference |
-| truong | ObjectId | No | No | ref: 'DonViLienKet' | Partner institution (secondary DB) |
+| truong | ObjectId | No | No | ref: 'DonViLienKet' | Partner institution (secondary DB). Must match the parent `daiDoi.donViLienKet` — the [DaiDoi schema invariant](DaiDoi.md#invariant-every-daidoi-has-exactly-one-donvilienket) makes the two fields redundant for the same student. |
 | ngayNhapHoc | Date | No | No | - | Enrollment date |
 | ngayVe | Date | No | No | - | Return/departure date (if applicable) |
-| trangThai | String | No | No | enum: 'Đang học' / 'Hoãn học' / 'Thôi học' / 'Đình chỉ' / 'Học ghép' / 'Miễn học' / 'Không tham gia học' | Current academic status. Mutations are typically driven by the [decision-processing workflow](../../workflows/decision-processing.md). `'Học ghép'` (joined-class) students have per-subject `tbMon` computed normally, but the **cross-subject `diemTB` summary is suppressed** (rendered as `—` in `TongKetCuoiKhoaView` and returned as `''` by the xếp loại tally — they land in `chuaCoDiem`). |
+| trangThai | String | No | No | enum: 'Đang học' / 'Hoãn học' / 'Thôi học' / 'Đình chỉ' / 'Học ghép' / 'Học lẻ' / 'Miễn học' / 'Không tham gia học' | Current academic status. Mutations are typically driven by the [decision-processing workflow](../../workflows/decision-processing.md). `'Học ghép'` (joined-class) and `'Học lẻ'` (standalone-class) students have per-subject `tbMon` computed normally, but the **cross-subject `diemTB` summary is suppressed** (rendered as `—` in `TongKetCuoiKhoaView` and returned as `''` by the xếp loại tally — they land in `chuaCoDiem`). The set of suppress-rollup statuses is exported as `TRANG_THAI_SUPPRESS_ROLLUP` from both `backend/src/models/SinhVien.js` and `frontend/src/data/constants.ts`. |
 | ghiChu | String | No | No | - | General notes/comments |
 | ghiChuYTe | String | No | No | default: `''` | Free-text medical note shown alongside `trangThaiSucKhoe` in the health-record UI. |
 | trangThaiSucKhoe | String | No | No | - | Health status summary |
@@ -54,11 +54,11 @@ Student records in the system. Each student belongs to a class (lop), platoon (d
 |-------|------|----------|-------------|-------------|
 | _id | ObjectId | Auto | - | Subdocument ID |
 | mon | String | Yes | Enum: MON_ENUM (7 courses) | Course name |
-| thuongXuyen | Number | Yes | 0-10 | Regular/continuous assessment score |
-| mieng | Number | No | 0-10 | Oral exam score (only for certain courses) |
-| giuaHP | Number | Yes | 0-10 | Midterm exam score |
-| hetHP | Number | Yes | 0-10 | Final exam score |
-| tbMon | Number | Auto | 0-10 | Average score (auto-calculated) |
+| thuongXuyen | Number \| null | No | 0-10 (or null) | Regular/continuous assessment score. `null` = miễn thành phần (exempt) |
+| mieng | Number \| null | No | 0-10 (or null) | Oral exam score (only for Cao đẳng subjects). `null` = exempt |
+| giuaHP | Number \| null | No | 0-10 (or null) | Midterm exam score. `null` = miễn thành phần (exempt) |
+| hetHP | Number \| null | No | 0-10 (or null) | Final exam score. `null` = miễn thành phần (exempt) |
+| tbMon | Number \| null | Auto | 0-10 (or null) | Average score (auto-calculated). `null` when every component is exempt |
 | createdAt | Date | Auto | - | Subdocument creation timestamp |
 | updatedAt | Date | Auto | - | Subdocument last update timestamp |
 
@@ -74,15 +74,27 @@ Student records in the system. Each student belongs to a class (lop), platoon (d
 
 ### Grade Calculation Formula
 
-**For first 4 courses**:
+Weighted average with **per-component rescaling**: any component whose value is `null` (miễn thành phần) is skipped from both numerator and denominator, and the surviving weights are normalised over the original 10-unit base.
+
+**First 4 courses (Đại học)** — full row:
 ```
-tbMon = thuongXuyen * 0.1 + giuaHP * 0.3 + hetHP * 0.6
+tbMon = (thuongXuyen * 1 + giuaHP * 3 + hetHP * 6) / (1 + 3 + 6)
+      = thuongXuyen * 0.1 + giuaHP * 0.3 + hetHP * 0.6
 ```
 
-**For last 3 courses**:
+**Last 3 courses (Cao đẳng)** — full row:
 ```
-tbMon = thuongXuyen * 0.1 + mieng * 0.1 + giuaHP * 0.2 + hetHP * 0.6
+tbMon = (thuongXuyen * 1 + mieng * 1 + giuaHP * 2 + hetHP * 6) / 10
+      = thuongXuyen * 0.1 + mieng * 0.1 + giuaHP * 0.2 + hetHP * 0.6
 ```
+
+**Rescaling when a component is null** (Đại học example, `giuaHP: null`):
+```
+tbMon = (thuongXuyen * 1 + hetHP * 6) / (1 + 6)   // weights normalised
+      = (0.10·TX + 0.60·HetHP) / 0.70
+```
+
+If every component is `null` → `tbMon` is `null` (no division by zero).
 
 ---
 

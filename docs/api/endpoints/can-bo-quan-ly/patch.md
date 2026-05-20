@@ -1,18 +1,18 @@
 # PATCH /api/can-bo-quan-ly/:id
 
-**Endpoint**: `PATCH /api/can-bo-quan-ly/:id`  
-**Authentication**: ✅ Required  
-
-**Roles**: admin  
-**HTTP Method**: **PATCH** (not PUT)  
-
-**Last Verified**: 2026-05-16
+**Endpoint**: `PATCH /api/can-bo-quan-ly/:id`
+**Authentication**: ✅ Required
+**Roles**: admin
+**HTTP Method**: **PATCH** (not PUT)
+**Last Verified**: 2026-05-19
 
 ---
 
 ## Description
 
 Updates an existing management staff member. **Admin-only operation**. Partial updates supported.
+
+When `phanCong` is included in the body, it **replaces** the entire array (Mongoose `$set`). The khoaHoc frontend reads the full current `phanCong[]`, mutates the entry for `selectedKhoa`, and sends back the full array — that way it never clobbers entries belonging to other khoa.
 
 ---
 
@@ -32,17 +32,27 @@ Authorization: Bearer <access_token>
 
 ### Body
 
-Send only the fields you want to update:
+Send only the fields you want to update. To rewrite a phanCong entry:
 
 ```json
 {
-  "capBac": "Đại tá",
-  "soDienThoai": "0987654321",
-  "donViQL": "Bộ Quốc phòng"
+  "phanCong": [
+    {
+      "khoa": "64a1b2c3d4e5f6a7b8c9d0e1",
+      "daiDoi": null,
+      "soQD": "QĐ-002/2024",
+      "ngayRaQD": "2024-06-15",
+      "hieuLuc": { "batDau": "2024-06-15", "ketThuc": "2024-12-31" },
+      "tkpk": "Phó khung",
+      "ghiChu": "Mới gán"
+    }
+  ]
 }
 ```
 
-**Updatable fields**: `hoTen`, `capBac`, `donViQL`, `chucVu`, `soDienThoai`, `ghiChu`, `soQD`, `ngayRaQD`, `hieuLuc`, `taiKhoan`
+**Updatable top-level fields**: `hoTen`, `capBac`, `donViQL`, `chucVu`, `soDienThoai`, `ghiChu`, `taiKhoan`, `phanCong`.
+
+`phanCong[]` validation rules are identical to POST: per-khoa uniqueness + cross-khoa daiDoi consistency.
 
 ---
 
@@ -55,16 +65,21 @@ Send only the fields you want to update:
   "data": {
     "_id": "507f1f77bcf86cd799439011",
     "hoTen": "Nguyễn Văn A",
-    "capBac": "Đại tá",
-    "donViQL": "Bộ Quốc phòng",
-    "chucVu": "Trưởng khoa",
-    "soDienThoai": "0987654321",
-    "ghiChu": "",
-    "soQD": "QĐ-001/2024",
-    "ngayRaQD": "01/01/2024",
-    "hieuLuc": "Còn hiệu lực",
-    "taiKhoan": "64a1b2c3d4e5f6a7b8c9d0e1",
-    "createdAt": "2023-01-15T00:00:00.000Z",
+    "phanCong": [
+      {
+        "_id": "60a1b2c3d4e5f6a7b8c9d0f1",
+        "khoa": "64a1b2c3d4e5f6a7b8c9d0e1",
+        "daiDoi": null,
+        "soQD": "QĐ-002/2024",
+        "ngayRaQD": "2024-06-15T00:00:00.000Z",
+        "hieuLuc": {
+          "batDau": "2024-06-15T00:00:00.000Z",
+          "ketThuc": "2024-12-31T00:00:00.000Z"
+        },
+        "tkpk": "Phó khung",
+        "ghiChu": "Mới gán"
+      }
+    ],
     "updatedAt": "2025-12-31T10:00:00.000Z"
   }
 }
@@ -80,12 +95,9 @@ Staff member doesn't exist.
 ### 403 Forbidden
 Only admin role can update staff.
 
-### 409 Conflict — Account already linked
-The `taiKhoan` ObjectId is already assigned to another staff member.
+### 400 Bad Request — VALIDATION_ERROR | DUPLICATE_KHOA_IN_PHANCONG | KHOA_DAIDOI_MISMATCH
 
-```json
-{ "error": "DUPLICATE_TAIKHOAN" }
-```
+### 409 Conflict — DUPLICATE_TAIKHOAN
 
 ---
 

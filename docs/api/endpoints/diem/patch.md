@@ -2,10 +2,8 @@
 
 **Endpoint**: `PATCH /api/diem/:id`  
 **Authentication**: ✅ Required  
-
 **Roles**: admin, staff, teacher (teacher writes restricted to students within `teacherScope`)
 **HTTP Method**: **PATCH** (not PUT)
-
 **Last Verified**: 2025-12-31
 
 ---
@@ -41,7 +39,7 @@ Send only the fields you want to update:
 }
 ```
 
-All fields are **optional** in update.
+All fields are **optional** in update. A component field set to `null` flips it to "miễn thành phần" (exempt) — `tbMon` is recomputed using the remaining components' rescaled weights. See [POST /api/diem](./post.md#per-component-exemption-null) for the formula.
 
 ---
 

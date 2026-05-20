@@ -28,3 +28,4 @@ Aggregate views over the student population — counts by status, by unit, by pa
 
 - **Scoping applies.** A staff user's `allowedUnits` filters the aggregates; the totals shown are *their* view, not global truth.
 - **Cached data.** The hook caches results client-side until a filter changes. If someone edits students concurrently, refresh by changing a filter and back.
+- **Row set follows the filter.** The table shows one row per đại đội whose metadata (khoa, đơn vị liên kết, ID) matches the active filter — đại đội outside the filter never appear, even with `quanSo: 0`. The "Thống kê theo khóa" rollup follows the same filtered subset.

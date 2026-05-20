@@ -1,16 +1,16 @@
 # GET /api/don-vi/dai-doi
 
-**Endpoint**: `GET /api/don-vi/dai-doi`  
-**Authentication**: ✅ Required  
-**Roles**: admin, staff, viewer, teacher  
-**Unit Scoping**: ✅ Applied (staff: `allowedUnits`; teacher: `teacherScope`)  
-**Last Verified**: 2026-01-02
+**Endpoint**: `GET /api/don-vi/dai-doi`
+**Authentication**: ✅ Required
+**Roles**: admin, staff, viewer, teacher
+**Unit Scoping**: ✅ Applied (staff: `allowedUnits`; teacher: `teacherScope`)
+**Last Verified**: 2026-05-19
 
 ---
 
 ## Description
 
-Lists dai-doi (battalions/squads).
+Lists dai-doi (battalions/squads). CBQL assignments are not returned here — they live on `CanBoQuanLy.phanCong[]` (filter with `GET /api/can-bo-quan-ly?khoa=<…>`).
 
 ---
 
@@ -29,7 +29,7 @@ Authorization: Bearer <access_token>
 | limit | number | 50 | Items per page |
 | khoa | string | - | Filter by parent Khoa ID |
 | khoaId | string | - | Alias for khoa parameter |
-| canBo | string | - | Filter by staff member ObjectId |
+| canBo | string | - | Filter to DaiDois referenced by that CBQL's `phanCong[].daiDoi` |
 | giangVien | string | - | Alias for canBo parameter |
 
 ---
@@ -49,17 +49,6 @@ Authorization: Bearer <access_token>
       "ngayBatDau": "2024-01-15T00:00:00.000Z",
       "ngayKetThuc": "2024-12-31T00:00:00.000Z",
       "quanSo": 45,
-      "canBo": ["64a1b2c3d4e5f6a7b8c9d0e4"],
-      "soQD": ["QĐ-001/2024"],
-      "ngayQD": ["2024-01-15T00:00:00.000Z"],
-      "hieuLuc": [
-        {
-          "batDau": "2024-01-15T00:00:00.000Z",
-          "ketThuc": "2024-12-31T00:00:00.000Z"
-        }
-      ],
-      "tkpk": ["Trưởng khung"],
-      "ghiChu": ["Phụ trách khung D2"],
       "createdAt": "2023-01-15T00:00:00.000Z",
       "updatedAt": "2023-01-15T00:00:00.000Z"
     }
@@ -79,3 +68,4 @@ Authorization: Bearer <access_token>
 - [GET /api/don-vi/dai-doi/:id](./dai-doi-get-one.md)
 - [POST /api/don-vi/dai-doi](./dai-doi-post.md)
 - [DaiDoi Schema](../../../backend/schemas/DaiDoi.md)
+- [CanBoQuanLy Schema](../../../backend/schemas/CanBoQuanLy.md) — assignment fields live here

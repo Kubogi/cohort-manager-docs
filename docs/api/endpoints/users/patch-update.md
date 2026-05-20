@@ -21,7 +21,9 @@ At least one field must be provided.
 | `role` | string | No | New role: `admin`, `staff`, `viewer`, or `teacher` |
 | `password` | string | No | New password (min 6 characters). If empty string or omitted, password is not changed |
 | `allowedUnits` | object | No | New unit permissions configuration (applies to `staff` role) |
-| `teacherScope` | array | No | New teacher scope entries. Each entry: `{ khoa, daiDoi, allKhoa, allDaiDoi }`. Validated against actual Khoa/DaiDoi records in the DB before saving. |
+| `teacherScope` | array | No | New **manual** teacher scope entries. Each entry: `{ khoa, daiDoi, allKhoa, allDaiDoi }`. Validated against actual Khoa/DaiDoi records before saving. |
+
+> **`teacherScopeSynced` is not accepted here.** It is system-managed (rewritten by [`syncTeacherScope`](../../workflows/teacher-scope-sync.md) whenever the linked CBQL.phanCong[] or CBQL.taiKhoan changes). Joi `stripUnknown` silently drops it from the request body — sending it has no effect.
 
 ### Example Request Body
 

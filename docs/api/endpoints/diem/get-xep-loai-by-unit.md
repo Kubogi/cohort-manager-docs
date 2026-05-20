@@ -5,7 +5,7 @@
 
 **Roles**: admin, staff, viewer, teacher
 
-**Last Verified**: 2026-05-16
+**Last Verified**: 2026-05-19
 
 **Unit Scoping**: ✅ Applied (staff: `allowedUnits`; teacher: `teacherScope`)
 
@@ -13,11 +13,11 @@
 
 ## Description
 
-Returns a grade-classification breakdown per battalion (đại đội). Each row represents one battalion and counts how many of its students fall into each classification bucket based on their average grade (`diemTB`).
+Returns a grade-classification breakdown per battalion (đại đội). Each row represents one battalion and counts how many of its students fall into each classification bucket based on their average grade (`diemTB`), along with `tong` — the total number of students that contributed to the row.
 
-The classification buckets are: **Xuất sắc** (9–10), **Giỏi** (8–9), **Khá** (7–8), **Trung bình** (5–7), **Nợ môn** (< 5 or missing required subjects), **Chưa có điểm** (no grades yet).
+The classification buckets are: **Xuất sắc** (9–10), **Giỏi** (8–9), **Khá** (7–8), **Trung bình** (5–7), **Nợ môn** (< 5 or missing required subjects). Students with no grades yet, or whose `trangThai` is a suppress-rollup status (`Học ghép` / `Học lẻ`), do not enter any bucket but still count toward `tong`.
 
-Classification is computed using the student's average across all subjects belonging to their school's education system (`heDaoTao`). Students whose school has an ambiguous or unrecognised `heDaoTao` are counted in `meta.unknownHe` and excluded from all buckets.
+Classification is computed using the student's average across all subjects belonging to their school's education system (`heDaoTao`). Students whose school has an ambiguous or unrecognised `heDaoTao` are counted in `meta.unknownHe` and excluded from both buckets and `tong`.
 
 ---
 
@@ -57,7 +57,7 @@ Authorization: Bearer <access_token>
       "kha": 20,
       "trungBinh": 8,
       "noMon": 2,
-      "chuaCoDiem": 3
+      "tong": 50
     }
   ],
   "meta": {
@@ -81,7 +81,7 @@ Authorization: Bearer <access_token>
 | data[].kha | number | Students with 7.0 ≤ diemTB < 8.0 |
 | data[].trungBinh | number | Students with 5.0 ≤ diemTB < 7.0 |
 | data[].noMon | number | Students with diemTB < 5.0 |
-| data[].chuaCoDiem | number | Students with no grades yet |
+| data[].tong | number | Total students in this row (sum of bucket counts + students with no grades + students whose `trangThai` suppresses the rollup, e.g. `Học ghép` / `Học lẻ`). Excludes students counted in `meta.unknownHe`. |
 | meta.unknownHe | number | Students excluded because their school's `heDaoTao` was ambiguous or unrecognised |
 
 Results are sorted by `khoaTen → truongTen → daiDoiTen` (Vietnamese locale).

@@ -31,3 +31,4 @@ Aggregate grade statistics — pass/fail counts, distribution by subject, by `kh
 - **Scoping applies** — staff/teacher see only their accessible students' grades reflected in the aggregates.
 - **Pass threshold is not codified in this app.** The Excel templates may render "Pass" / "Fail" but the system doesn't store a threshold. Communicate the rule externally.
 - **Cached** — like Báo cáo, results are cached client-side per filter combination. Reload with a filter change to invalidate.
+- **Columns**: Khóa · (Đơn vị liên kết · Đại đội on the per-đại-đội tab) · Xuất sắc · Giỏi · Khá · Trung bình · Nợ môn · **Tổng**. The `Tổng` column is the total student count for that khoa / khoa+đại đội group (sum of all bucket counts plus students with no grades yet and students whose `trangThai` suppresses the rollup such as `Học ghép` / `Học lẻ`).

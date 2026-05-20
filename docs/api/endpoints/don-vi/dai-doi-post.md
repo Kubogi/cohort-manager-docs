@@ -1,15 +1,17 @@
 # POST /api/don-vi/dai-doi
 
-**Endpoint**: `POST /api/don-vi/dai-doi`  
-**Authentication**: ✅ Required  
-**Roles**: admin  
-**Last Verified**: 2026-05-16
+**Endpoint**: `POST /api/don-vi/dai-doi`
+**Authentication**: ✅ Required
+**Roles**: admin
+**Last Verified**: 2026-05-19
 
 ---
 
 ## Description
 
 Creates a new dai-doi (battalion/squad). **Admin-only operation**.
+
+Note: As of May 2026, CBQL ↔ DaiDoi assignments are stored on `CanBoQuanLy.phanCong[]`, not on DaiDoi. This endpoint no longer accepts the legacy `canBo / soQD / ngayQD / hieuLuc / tkpk / ghiChu` arrays — Joi's `stripUnknown` drops them silently. To attach a CBQL, PATCH the CBQL with the new `phanCong[]` entry.
 
 ---
 
@@ -30,40 +32,21 @@ Authorization: Bearer <access_token>
   "donViLienKet": "64a1b2c3d4e5f6a7b8c9d0e3",
   "ngayBatDau": "2024-01-15",
   "ngayKetThuc": "2024-12-31",
-  "quanSo": 45,
-  "canBo": ["64a1b2c3d4e5f6a7b8c9d0e4"],
-  "soQD": ["QĐ-001/2024"],
-  "ngayQD": ["2024-01-15"],
-  "hieuLuc": [
-    {
-      "batDau": "2024-01-15",
-      "ketThuc": "2024-12-31"
-    }
-  ],
-  "tkpk": ["Trưởng khung"],
-  "ghiChu": ["Phụ trách khung D2"]
+  "quanSo": 45
 }
 ```
 
 ### Required Fields
 
-- `ten` (string, max 200 chars) - Platoon name
-- `khoa` (ObjectId string) - Parent khoa reference
+- `ten` (string, max 200 chars) — Platoon name
+- `khoa` (ObjectId string) — Parent khoa reference
+- `donViLienKet` (ObjectId string) — Partner institution reference
 
 ### Optional Fields
 
-- `donViLienKet` (ObjectId string) - Partner institution reference
-- `ngayBatDau` (ISO date string) - Platoon start date
-- `ngayKetThuc` (ISO date string) - Platoon end date
-- `quanSo` (number) - Platoon strength/headcount
-- `canBo` (array of ObjectId strings) - Staff member references
-- `soQD` (array of strings) - Decision numbers
-- `ngayQD` (array of ISO date strings) - Decision dates
-- `hieuLuc` (array of objects) - Validity periods with `batDau` and `ketThuc` dates
-- `tkpk` (array of strings) - Per-assignment TK/PK role. Each item must be `""`, `"Trưởng khung"`, or `"Phó khung"`.
-- `ghiChu` (array of strings, max 500 chars each) - Per-assignment free-text notes.
-
-**IMPORTANT**: Arrays `canBo`, `soQD`, `ngayQD`, `hieuLuc`, `tkpk`, and `ghiChu` must have equal lengths (validated by schema).
+- `ngayBatDau` (ISO date string) — Platoon start date
+- `ngayKetThuc` (ISO date string) — Platoon end date
+- `quanSo` (number) — Platoon strength/headcount
 
 ---
 
@@ -81,17 +64,6 @@ Authorization: Bearer <access_token>
     "ngayBatDau": "2024-01-15T00:00:00.000Z",
     "ngayKetThuc": "2024-12-31T00:00:00.000Z",
     "quanSo": 45,
-    "canBo": ["64a1b2c3d4e5f6a7b8c9d0e4"],
-    "soQD": ["QĐ-001/2024"],
-    "ngayQD": ["2024-01-15T00:00:00.000Z"],
-    "hieuLuc": [
-      {
-        "batDau": "2024-01-15T00:00:00.000Z",
-        "ketThuc": "2024-12-31T00:00:00.000Z"
-      }
-    ],
-    "tkpk": ["Trưởng khung"],
-    "ghiChu": ["Phụ trách khung D2"],
     "createdAt": "2025-12-31T10:00:00.000Z",
     "updatedAt": "2025-12-31T10:00:00.000Z"
   }
@@ -116,3 +88,4 @@ A dai-doi with the same combination of `ten`, `khoa`, and `donViLienKet` already
 - [GET /api/don-vi/dai-doi](./dai-doi-get-list.md)
 - [PATCH /api/don-vi/dai-doi/:id](./dai-doi-patch.md)
 - [DaiDoi Schema](../../../backend/schemas/DaiDoi.md)
+- [CanBoQuanLy Schema](../../../backend/schemas/CanBoQuanLy.md) — assignment fields live here now

@@ -27,13 +27,13 @@ Authorization: Bearer <access_token>
 |-----------|------|---------|-------------|
 | page | number | 1 | Page number (1-indexed) |
 | limit | number | 20 | Items per page |
-| sinhVien | string | - | Filter by SinhVien ID |
+| sinhVien | string | - | Filter by SinhVien ID. **Accepts a comma-separated list** (e.g. `?sinhVien=id1,id2`) → matched with `$in`. Single value behaves as exact match. |
 | mon | string | - | Filter by course name. When provided, each item also includes `maSV`, `hoTen`, `ngaySinh`, `lop` from the parent student (different response shape from the no-`mon` case). |
 | khoa | string | - | Filter by Khoa ID |
 | daiDoi | string | - | Filter by DaiDoi ID |
 | truong | string | - | Filter by DonViLienKet ID (partner school) |
 | trangThai | string | - | Filter by student status |
-| maSV | string | - | Regex filter on student ID |
+| maSV | string | - | Filter on student code. **Accepts a comma-separated list** (e.g. `?maSV=A,B,C`) → matched with `$in` (exact equality per item). A single value (no comma) is still treated as a case-insensitive regex substring — that's how the advanced "Tìm kiếm theo mã SV" partial-match filter on the Nhập điểm tab works. |
 | hoTen | string | - | Regex filter on student name |
 | lop | string | - | Regex filter on class designation |
 

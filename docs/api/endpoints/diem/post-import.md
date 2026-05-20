@@ -2,11 +2,8 @@
 
 **Endpoint**: `POST /api/diem/import`
 **Authentication**: Required (Bearer)
-
 **Roles**: `admin`, `staff`, `teacher`
-
 **Source**: [diem.route.js:27](../../../../backend/src/routes/diem.route.js#L27), [diem.controller.js:30](../../../../backend/src/controllers/diem.controller.js#L30), [diem.service.js:255](../../../../backend/src/services/diem.service.js#L255)
-
 **Last verified**: 2026-05-16
 
 ## Description
@@ -43,6 +40,15 @@ For each worksheet:
 The student is matched by `maSV` against students pre-loaded from `(khoa, donViLienKet)` filtered by the caller's `allowedUnits` / `teacherScope`. **Students outside scope are not visible to the importer**; they appear in `missingStudents` rather than being inserted.
 
 When a `Diem` subdocument already exists for `mon` on the matched student, only the fields supplied in the row are overwritten — empty cells leave the previous value alone. When no `Diem` exists, a new one is created with `thuongXuyen: 0, giuaHP: 0, hetHP: 0` defaults (plus `mieng: 0` for Cao đẳng) and any supplied values overlaid. The `tbMon` average is auto-computed by `pre('validate')` on save.
+
+### Dash cells = miễn thành phần
+
+A cell containing `-` or `—` (em-dash) on a grade column is treated as "exempt this exam". The importer stores `null` for that component, which the rescaled `tbMon` formula then skips (see [POST /api/diem](./post.md#per-component-exemption-null)). Two consequences:
+
+- **Insert path**: a row with mixed dashes and numbers writes the numbers as-is and the dashes as `null`. A row of all dashes still inserts a `Diem` (all-null components, `tbMon: null`) — useful for marking a student as fully exempt-by-component without using `monMienHoc`.
+- **Re-import path**: a dash overwrites a previously-saved number → that component flips to exempt and `tbMon` is recomputed on the next save. A blank cell still preserves the previous value.
+
+Out-of-range numerics (`> 10`, `< 0`, non-numeric and non-dash) still land in `errors` as before.
 
 ## Response
 

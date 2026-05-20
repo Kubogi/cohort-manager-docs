@@ -1,17 +1,17 @@
 # POST /api/can-bo-quan-ly
 
-**Endpoint**: `POST /api/can-bo-quan-ly`  
-**Authentication**: ✅ Required  
-
-**Roles**: admin  
-
-**Last Verified**: 2026-05-16
+**Endpoint**: `POST /api/can-bo-quan-ly`
+**Authentication**: ✅ Required
+**Roles**: admin
+**Last Verified**: 2026-05-19
 
 ---
 
 ## Description
 
 Creates a new management staff member. **Admin-only operation**.
+
+The legacy top-level `soQD`, `ngayRaQD`, `hieuLuc` fields are no longer part of the schema — those values now live per-khoa under `phanCong[]`.
 
 ---
 
@@ -32,29 +32,40 @@ Authorization: Bearer <access_token>
   "donViQL": "Bộ Quốc phòng",
   "chucVu": "Trưởng khoa",
   "soDienThoai": "0912345678",
-  "ghiChu": "",
-  "soQD": "QĐ-001/2024",
-  "ngayRaQD": "01/01/2024",
-  "hieuLuc": "Còn hiệu lực",
+  "ghiChu": "Notes about the person (not the assignment)",
+  "phanCong": [
+    {
+      "khoa": "64a1b2c3d4e5f6a7b8c9d0e1",
+      "daiDoi": "64a1b2c3d4e5f6a7b8c9d0e2",
+      "soQD": "QĐ-001/2024",
+      "ngayRaQD": "2024-01-15",
+      "hieuLuc": { "batDau": "2024-01-15", "ketThuc": "2024-12-31" },
+      "tkpk": "Trưởng khung",
+      "ghiChu": "Phụ trách khung D2"
+    }
+  ],
   "taiKhoan": "64a1b2c3d4e5f6a7b8c9d0e1"
 }
 ```
 
 ### Required Fields
 
-- `hoTen` (string, max 200 chars) - Full name
+- `hoTen` (string, max 200 chars) — Full name
 
 ### Optional Fields
 
-- `capBac` (string) - Military rank (e.g. "Thiếu tá", "Đại tá")
-- `donViQL` (string) - Managing unit / workplace assignment (plain string, not an ObjectId)
-- `chucVu` (string) - Position / role title
-- `soDienThoai` (string) - Phone number
-- `ghiChu` (string) - Free-text notes
-- `soQD` (string) - Decision reference number
-- `ngayRaQD` (string) - Decision issue date (free-text string)
-- `hieuLuc` (string) - Effective-status text (e.g. "Còn hiệu lực", "Hết hiệu lực")
-- `taiKhoan` (ObjectId string) - ObjectId of an existing `User` to link this staff member to
+- `capBac` / `donViQL` / `chucVu` / `soDienThoai` / `ghiChu` (string)
+- `taiKhoan` (24-char hex ObjectId) — link to an existing `User`
+- `phanCong[]` — per-khoa assignments. Each entry:
+  - `khoa` (24-char hex ObjectId) — **required** within the entry
+  - `daiDoi` (24-char hex ObjectId | `null`) — optional; if set, the DaiDoi's khoa must equal this entry's `khoa` (otherwise `400 KHOA_DAIDOI_MISMATCH`)
+  - `soQD` (string, max 100)
+  - `ngayRaQD` (ISO date | `null`)
+  - `hieuLuc` (`{ batDau, ketThuc }` of ISO dates | `null`)
+  - `tkpk` (`""` | `"Trưởng khung"` | `"Phó khung"`)
+  - `ghiChu` (string, max 500)
+
+A CBQL may have **at most one** `phanCong` entry per khoa. Duplicates are rejected with `400 DUPLICATE_KHOA_IN_PHANCONG`.
 
 ---
 
@@ -71,10 +82,22 @@ Authorization: Bearer <access_token>
     "donViQL": "Bộ Quốc phòng",
     "chucVu": "Trưởng khoa",
     "soDienThoai": "0912345678",
-    "ghiChu": "",
-    "soQD": "QĐ-001/2024",
-    "ngayRaQD": "01/01/2024",
-    "hieuLuc": "Còn hiệu lực",
+    "ghiChu": "Notes about the person",
+    "phanCong": [
+      {
+        "_id": "60a1b2c3d4e5f6a7b8c9d0f1",
+        "khoa": "64a1b2c3d4e5f6a7b8c9d0e1",
+        "daiDoi": "64a1b2c3d4e5f6a7b8c9d0e2",
+        "soQD": "QĐ-001/2024",
+        "ngayRaQD": "2024-01-15T00:00:00.000Z",
+        "hieuLuc": {
+          "batDau": "2024-01-15T00:00:00.000Z",
+          "ketThuc": "2024-12-31T00:00:00.000Z"
+        },
+        "tkpk": "Trưởng khung",
+        "ghiChu": "Phụ trách khung D2"
+      }
+    ],
     "taiKhoan": "64a1b2c3d4e5f6a7b8c9d0e1",
     "createdAt": "2025-12-31T10:00:00.000Z",
     "updatedAt": "2025-12-31T10:00:00.000Z"
@@ -89,22 +112,20 @@ Authorization: Bearer <access_token>
 ### 403 Forbidden
 Only admin role can create staff.
 
-### 400 Bad Request
-Missing required field `hoTen`.
+### 400 Bad Request — VALIDATION_ERROR
+Missing required field `hoTen`, or invalid `phanCong` entry.
 
-### 409 Conflict — Duplicate name
+### 400 Bad Request — DUPLICATE_KHOA_IN_PHANCONG
+The `phanCong[]` array contains two entries with the same `khoa`.
+
+### 400 Bad Request — KHOA_DAIDOI_MISMATCH
+A `phanCong` entry has `daiDoi` set, but the `DaiDoi` belongs to a different khoa.
+
+### 409 Conflict — DUPLICATE_CAN_BO
 A staff member with the same `hoTen` already exists.
 
-```json
-{ "error": { "code": "DUPLICATE_CAN_BO", "message": "Cán bộ đã tồn tại" } }
-```
-
-### 409 Conflict — Account already linked
+### 409 Conflict — DUPLICATE_TAIKHOAN
 The `taiKhoan` ObjectId is already assigned to another staff member.
-
-```json
-{ "error": "DUPLICATE_TAIKHOAN" }
-```
 
 ---
 

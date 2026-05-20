@@ -2,9 +2,7 @@
 
 **Endpoint**: `POST /api/diem`  
 **Authentication**: ✅ Required  
-
 **Roles**: admin, staff, teacher (teacher writes are restricted to students within `teacherScope`)
-
 **Last Verified**: 2026-01-02
 
 ---
@@ -40,22 +38,28 @@ Authorization: Bearer <access_token>
 
 - `sinhVien` (ObjectId string)
 - `mon` (string from MON_ENUM - see schema)
-- `thuongXuyen` (number, 0-10) - Required
-- `giuaHP` (number, 0-10) - Required
-- `hetHP` (number, 0-10) - Required
+- `thuongXuyen` (number 0-10, or `null` for miễn thành phần) - Required to be present in the body
+- `giuaHP` (number 0-10, or `null` for miễn thành phần) - Required to be present in the body
+- `hetHP` (number 0-10, or `null` for miễn thành phần) - Required to be present in the body
 
 ### Optional Fields
 
-- `mieng` (number, 0-10) - Only used for last 3 subjects
+- `mieng` (number 0-10, or `null` for miễn thành phần) - Only used for last 3 subjects
 
-**Note**: `tbMon` is **auto-calculated** from component grades using different formulas:
+### Per-component exemption (`null`)
 
-**Formula 1** (First 4 subjects: Đường lối..., Công tác..., Quân sự chung, Kỹ thuật...):
-- `tbMon = thuongXuyen * 0.1 + giuaHP * 0.3 + hetHP * 0.6`
-- Note: `mieng` score is NOT used for these subjects
+A component value of `null` means the student is exempt from that specific exam ("miễn thành phần"). The `tbMon` formula then **skips that component from both numerator and denominator** and rescales the remaining weights to sum to the full curriculum weight. Use this when a student is excused from one cell (e.g. Giữa HP) but still participates in the others; for whole-subject exemption use `monMienHoc[]` on the student instead.
 
-**Formula 2** (Last 3 subjects: Chính trị 1, Chính trị 2, Quân sự):
-- `tbMon = thuongXuyen * 0.1 + mieng * 0.1 + giuaHP * 0.2 + hetHP * 0.6`
+**Note**: `tbMon` is **auto-calculated** from component grades using different weight sets per subject:
+
+**Đại học** (first 4 subjects): weights `10% + 30% + 60%` on `thuongXuyen + giuaHP + hetHP`. `mieng` is ignored.
+
+**Cao đẳng** (last 3 subjects): weights `10% + 10% + 20% + 60%` on `thuongXuyen + mieng + giuaHP + hetHP`.
+
+Rescaling examples (Đại học):
+- Full row tx=8, giuaHP=9, hetHP=7 → `(8·1 + 9·3 + 7·6) / 10 = 7.7`
+- `giuaHP: null`, tx=10, hetHP=8 → `(10·1 + 8·6) / 7 ≈ 8.3`
+- All three null → `tbMon: null` (no division by zero).
 
 ---
 
@@ -102,7 +106,7 @@ Returned when `student.monMienHoc` includes the requested `mon`. Exempt students
 - Adds to SinhVien.diem subdocument array
 - tbMon auto-calculated using different formulas based on subject
 - mon must be one of 7 courses from MON_ENUM
-- thuongXuyen, giuaHP, hetHP are required fields (not optional)
+- `thuongXuyen`, `giuaHP`, `hetHP` must be present in the body (Joi `required()`); their value may be a number 0-10 or `null` (miễn thành phần)
 
 ---
 

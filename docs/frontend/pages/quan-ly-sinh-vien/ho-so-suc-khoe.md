@@ -39,6 +39,7 @@ Source: `HoSoListingPage.tsx`.
 **What it shows:**
 - One row per health record (the student can have multiple over time).
 - Columns: student name, khoa, đại đội, trạng thái, ngày đi, ngày về, bệnh viện, lý do.
+- The list mirrors the server-side student search verbatim. Students whose names are needed only to resolve the Thống kê tab's record→student join (e.g. health-record students past the page slice) are kept in a separate lookup map and **never appear in this table** — search results stay narrow.
 
 ### Tab 2 — "Thống kê"
 
@@ -61,6 +62,9 @@ Source: `BaoCaoAggregationPage.tsx`.
 
 **What it shows:**
 - A pivot-style table or chart with counts by `trangThai` per unit.
+
+**Toolbar:**
+- A **Xóa bộ lọc** button under the filter row resets `khoa`, `donViLienKet`, and `daiDoi` together — same handler as the sibling tabs. Disabled while data is loading.
 
 ## Common tasks
 

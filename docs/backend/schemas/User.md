@@ -1,10 +1,8 @@
 # User Schema
 
 **Source**: [backend/src/models/User.js](../../../backend/src/models/User.js)
-
 **Collection**: `users` (primary cluster)
-
-**Last verified**: 2026-05-16
+**Last verified**: 2026-05-19
 
 ---
 
@@ -22,7 +20,8 @@ User accounts for authentication and authorization. Uses a complex nested allowe
 | passwordHash | String | Yes | No | - | Hashed password (bcrypt cost 10) |
 | role | String | No (default) | No | 'viewer' | One of `admin`, `staff`, `viewer`, `teacher` |
 | allowedUnits | IAllowedUnits | No | No | {} | Unit-level scope for staff (see [auth.md](../../architecture/auth.md#5-per-unit-scoping--allowedunits-staff)) |
-| teacherScope | TeacherScopeEntry[] | No | No | [] | Per-teacher (khoa, đại đội) entries (see [auth.md](../../architecture/auth.md#6-per-unit-scoping--teacherscope-teacher)) |
+| teacherScope | TeacherScopeEntry[] | No | No | [] | **Admin-managed** scope entries. Set via PATCH /api/users/:id (see [auth.md](../../architecture/auth.md#6-per-unit-scoping--teacherscope-teacher)). |
+| teacherScopeSynced | TeacherScopeEntry[] | No | No | [] | **System-managed** scope entries, derived from CanBoQuanLy.phanCong[] when the user is linked via CanBoQuanLy.taiKhoan. Rewritten by [`teacherScope.service.syncTeacherScope`](../../../backend/src/services/teacherScope.service.js). Stripped from admin PATCH payloads by Joi `stripUnknown`. |
 | status | String | No (default) | No | 'active' | One of `active`, `disabled` |
 | lastLogin | Date | No | No | - | Last successful login timestamp |
 | createdAt | Date | Auto | No | - | Document creation timestamp |
@@ -100,9 +99,18 @@ teacherScope: Array<{
 }>
 ```
 
-Each entry contributes one `$or` branch in queries; the user can access the union of their entries. An empty array means "no rows for you" (sentinel filter `{ _id: { $in: [] } }`). An entry with both `allKhoa: true` and `allDaiDoi: true` contributes a wildcard.
+Each entry contributes one `$or` branch in queries; the user can access the union of `teacherScope ∪ teacherScopeSynced`. An empty union means "no rows for you" (sentinel filter `{ _id: { $in: [] } }`). An entry with both `allKhoa: true` and `allDaiDoi: true` contributes a wildcard.
 
 `teacherScope` is included in the JWT access token for client-side UI gating. Cross-DB validity (every khoa + daiDoi exists) is checked at write time by `validateTeacherScopeAgainstDB` in `services/user.service.js`.
+
+### Split: manual vs synced
+
+| Field | Who writes | When |
+|-------|-----------|------|
+| `teacherScope` | Admin (PATCH /api/users/:id) | When admin edits the "Cấu hình phạm vi truy cập" popup and saves. |
+| `teacherScopeSynced` | System (`syncTeacherScope`) | Triggered when CBQL.taiKhoan or CBQL.phanCong[] changes, or when a Khoa/DaiDoi delete demotes/removes phanCong entries. |
+
+The two arrays never collide: admin actions only touch `teacherScope`; sync only touches `teacherScopeSynced`. `applyTeacherScope` reads the union of both. Orphan phanCong entries (`daiDoi: null`) are skipped during sync — see [`docs/workflows/teacher-scope-sync.md`](../../workflows/teacher-scope-sync.md).
 
 ---
 
