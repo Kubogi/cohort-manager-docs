@@ -1,6 +1,6 @@
 # /api/hoc-lieu
 
-Learning-materials repository. Folder/file tree across three independent drives (`giaoAn`, `giaoTrinh`, `taiLieuThamKhao`). Metadata in Mongo (`HocLieu` model), binaries on disk under `backend/uploads/<drive>/`. Quotas: 3 GB per drive, 100 MB per file.
+Learning-materials repository. Folder/file tree across three independent drives (`deCuong`, `giaoTrinh`, `taiLieuThamKhao`). Metadata in Mongo (`HocLieu` model), binaries on disk under `backend/uploads/<drive>/`. Quotas: 3 GB per drive, 100 MB per file.
 
 Roles: `admin`, `staff`, `viewer`, `teacher` (read + write for most). Per-unit scoping does NOT apply here — these are global resources, not student-bound.
 
@@ -12,7 +12,7 @@ Roles: `admin`, `staff`, `viewer`, `teacher` (read + write for most). Per-unit s
 
 List entries inside a drive/folder.
 
-**Query**: `drive` (one of `giaoAn` / `giaoTrinh` / `taiLieuThamKhao`; strongly recommended — no server-side validation enforces it; if omitted, returns items from **all drives**), `parent` (optional ObjectId; omit for drive root).
+**Query**: `drive` (one of `deCuong` / `giaoTrinh` / `taiLieuThamKhao`; strongly recommended — no server-side validation enforces it; if omitted, returns items from **all drives**), `parent` (optional ObjectId; omit for drive root).
 
 **Response**: `{ data: HocLieuItem[] }`. No `meta` — list is not paginated.
 
@@ -22,7 +22,7 @@ Each item: `{ _id, name, drive, type: 'file' | 'folder', parent, mimeType?, size
 
 Per-drive bytes used + percentage of the 3 GB cap.
 
-**Query**: `drive` (one of `giaoAn` / `giaoTrinh` / `taiLieuThamKhao`; no server-side validation — if omitted, computes usage across all drives combined).
+**Query**: `drive` (one of `deCuong` / `giaoTrinh` / `taiLieuThamKhao`; no server-side validation — if omitted, computes usage across all drives combined).
 
 **Response**: `{ data: { used: <bytes>, limit: <bytes>, percentage: <0..100> } }`.
 

@@ -8,11 +8,11 @@
 
 ## Goal
 
-Browse, upload, organize, and download teaching materials across three independent drives (`giaoAn`, `giaoTrinh`, `taiLieuThamKhao`), each with a 3 GB quota.
+Browse, upload, organize, and download teaching materials across three independent drives (`deCuong`, `giaoTrinh`, `taiLieuThamKhao`), each with a 3 GB quota.
 
 ## Happy path — upload a file
 
-1. User opens **Kho học liệu số**, picks the drive (Giáo án / Giáo trình / Tài liệu tham khảo).
+1. User opens **Kho học liệu số**, picks the drive (Đề cương / Giáo trình / Tài liệu tham khảo).
 2. Navigates to the destination folder via the breadcrumb.
 3. Clicks **Tải lên**, selects a file from the OS picker.
 4. Frontend sends `POST /api/hoc-lieu/upload` as `multipart/form-data` with `file`, `drive`, `parent` (the current folder id or null for root).
@@ -63,8 +63,8 @@ Browse, upload, organize, and download teaching materials across three independe
 
 ## Manual test recipe
 
-- [ ] Upload a 50 MB PDF into Giáo án root. Confirm the row appears.
+- [ ] Upload a 50 MB PDF into Đề cương root. Confirm the row appears.
 - [ ] Create a sub-folder, move the upload (via a follow-up upload or future move endpoint).
 - [ ] Try uploading a `.exe` — expect `400 INVALID_FILE_TYPE`.
-- [ ] Check `GET /api/hoc-lieu/usage?drive=giaoAn` matches what `du -sh backend/uploads/giaoAn` reports (close enough; HocLieu rows track logical bytes, FS tracks block-aligned bytes).
+- [ ] Check `GET /api/hoc-lieu/usage?drive=deCuong` matches what `du -sh backend/uploads/deCuong` reports (close enough; HocLieu rows track logical bytes, FS tracks block-aligned bytes).
 - [ ] Delete the sub-folder; verify the on-disk path is gone too.

@@ -83,6 +83,8 @@ Source: `BaoCaoAggregationPage.tsx`.
 3. Flip `trangThai` to "Bình thường".
 4. Save.
 
+A confirmation modal appears summarising the auto-appended `ghiChuYTe` line: `Đi viện lần N: dd/mm`. The `dd/mm` is the **admission** date (`thoiGianDi.ngay`) — the line describes *when the student went to hospital* — not the discharge date.
+
 ### Check how many students are currently in hospital
 
 Switch to Tab 3 (Báo cáo) and look at the "Viện" count for the relevant unit.

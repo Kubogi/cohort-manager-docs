@@ -39,6 +39,7 @@ Daily military-duty roster, **scoped per Khóa**. One row per `(khoa, ngay)` pai
 ## Migration history
 
 - **2026-05-19.** Schema migrated from a global single-calendar model (`unique` on `ngay`) to per-Khóa storage. The migration was destructive: existing rows were wiped via [`backend/scripts/drop-truc-quan-su.js`](../../../backend/scripts/drop-truc-quan-su.js) (chosen over backfill since recreating a calendar from the Excel import is trivial).
+- **2026-05-22.** Deployments that survived the 2026-05-19 row wipe were still carrying the *index* from the old schema — a `{ngay: 1, unique: true}` left over even after the Mongoose model dropped it. Mongoose's `autoIndex` only adds missing indexes, never drops stale ones, so the legacy index silently blocked cross-Khóa imports: the second khoa's rows all collided with the first khoa's dates and reported as duplicates. Fix shipped via [`backend/src/scripts/drop-trucQuanSu-legacy-ngay-index.js`](../../../backend/src/scripts/drop-trucQuanSu-legacy-ngay-index.js); run once per environment (idempotent).
 
 ## Related
 

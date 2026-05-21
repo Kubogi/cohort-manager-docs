@@ -49,7 +49,7 @@ This document is the highest-level system map. It tells you *where things live* 
                 │   backend/uploads/                              │
                 │   ├─ .tmp/             (multer staging)         │
                 │   ├─ attachments/      (per-record files)       │
-                │   └─ {giaoAn,giaoTrinh,taiLieuThamKhao}/        │
+                │   └─ {deCuong,giaoTrinh,taiLieuThamKhao}/       │
                 │                        (học liệu drives, 3 GB ea)│
                 │                                                 │
                 │   backend/forms/       (read-only xlsx templates│

@@ -63,7 +63,7 @@ When you write new documentation, prefer the English term in prose and put the V
 | In ấn | Printing | — | "Biểu mẫu & in ấn" is the page name (Forms & Printing). |
 | Học liệu | Learning material | `hocLieu` | File/folder in the digital materials repository. |
 | Kho học liệu số | Digital learning materials repository | `khoHocLieuSo` | The page that browses học liệu. |
-| Giáo án | Teaching plan | `giaoAn` | One of the three `hoc-lieu` drives. |
+| Đề cương | Syllabus / course outline | `deCuong` | One of the three `hoc-lieu` drives. Renamed from `giaoAn` (2026-05-20). |
 | Giáo trình | Textbook / coursebook | `giaoTrinh` | One of the three drives. |
 | Tài liệu tham khảo | Reference material | `taiLieuThamKhao` | One of the three drives. |
 | Sổ điểm | Grade book | `soDiem` | A type of biểu mẫu — multi-sheet Excel output. |

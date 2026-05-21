@@ -4,9 +4,11 @@
 
 **Collection**: `hoc_lieu` (primary cluster)
 
-**Last verified**: 2026-05-16
+**Last verified**: 2026-05-20
 
-A node in the learning-materials repository. Each row is either a **file** or a **folder**. Folders form a tree via the self-referential `parent` field. Three independent trees coexist, one per **drive** (`giaoAn`, `giaoTrinh`, `taiLieuThamKhao`); a node's `(drive, parent)` pair uniquely scopes it.
+A node in the learning-materials repository. Each row is either a **file** or a **folder**. Folders form a tree via the self-referential `parent` field. Three independent trees coexist, one per **drive** (`deCuong`, `giaoTrinh`, `taiLieuThamKhao`); a node's `(drive, parent)` pair uniquely scopes it.
+
+> Drive `deCuong` was renamed from `giaoAn` on 2026-05-20 (label: "Giáo án" → "Đề cương"). Existing documents were migrated via [`backend/src/scripts/rename-giaoAn-to-deCuong.js`](../../../backend/src/scripts/rename-giaoAn-to-deCuong.js). The `giaoAn` value is no longer accepted by the enum.
 
 The actual file contents are stored on disk under `backend/uploads/<drive>/...`; this collection holds only the metadata. See [`/docs/architecture/file-storage.md`](../../architecture/file-storage.md).
 
@@ -15,7 +17,7 @@ The actual file contents are stored on disk under `backend/uploads/<drive>/...`;
 | Field | Type | Required | Default | Description |
 |---|---|---|---|---|
 | `name` | String | Yes | — | Display name. Unique within `(drive, parent)`. |
-| `drive` | String enum | Yes | — | One of `'giaoAn'`, `'giaoTrinh'`, `'taiLieuThamKhao'`. Top-level partition. |
+| `drive` | String enum | Yes | — | One of `'deCuong'`, `'giaoTrinh'`, `'taiLieuThamKhao'` (sourced from `DRIVE_NAMES` in `config/storage.js`). Top-level partition. |
 | `type` | String enum | Yes | — | `'file'` or `'folder'`. |
 | `parent` | ObjectId → HocLieu | No | `null` | Parent folder (self-reference). `null` means root of the drive. |
 | `mimeType` | String | No | — | Set for files; copied from multer at upload time. |

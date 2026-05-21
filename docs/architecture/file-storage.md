@@ -35,7 +35,7 @@ backend/
    ├─ attachments/                ── Per-record persistent attachments
    │  ├─ QuyetDinh/<uuid>.<ext>   ── one attachment per QuyetDinh
    │  └─ HoSoSucKhoe/<uuid>.<ext> ── one attachment per HoSoSucKhoe
-   ├─ giaoAn/                     ── Học liệu drive 1 (teaching plans)
+   ├─ deCuong/                    ── Học liệu drive 1 (syllabi / course outlines)
    ├─ giaoTrinh/                  ── Học liệu drive 2 (coursebooks)
    └─ taiLieuThamKhao/            ── Học liệu drive 3 (reference materials)
 ```
@@ -56,7 +56,7 @@ From `backend/src/config/storage.js`:
 
 | Limit | Value | Enforced where |
 |---|---|---|
-| `MAX_DRIVE_SIZE` | 3 GB per drive (`giaoAn`, `giaoTrinh`, `taiLieuThamKhao`) | `hocLieu.service.upload` before write |
+| `MAX_DRIVE_SIZE` | 3 GB per drive (`deCuong`, `giaoTrinh`, `taiLieuThamKhao`) | `hocLieu.service.upload` before write |
 | `MAX_FILE_SIZE` | 100 MB per uploaded file | multer config in `hoc-lieu` route |
 | Excel import file size | 20 MB | multer config in `sinh-vien` + `diem` routes |
 | `ALLOWED_EXTENSIONS` (30 entries) | `.pdf .doc .docx .xls .xlsx .ppt .pptx .txt .csv .rtf .odt .ods .odp .epub .jpg .jpeg .png .gif .bmp .svg .webp .mp3 .mp4 .wav .avi .mkv .webm .zip .rar .7z` | Checked in `hocLieu.service.js` as a post-multer extension guard — actively used, not dead code. Multer's fileFilter checks MIME type at the route level; the service separately checks the extension against this list. |

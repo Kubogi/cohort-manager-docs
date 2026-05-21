@@ -12,11 +12,11 @@
 
 ## When to use
 
-Upload, organize, and download teaching materials. The repository is organized into **three drives** (`giáo án`, `giáo trình`, `tài liệu tham khảo`); each is a self-contained folder tree with a 3 GB quota.
+Upload, organize, and download teaching materials. The repository is organized into **three drives** (`đề cương`, `giáo trình`, `tài liệu tham khảo`); each is a self-contained folder tree with a 3 GB quota.
 
 ## Layout
 
-- Drive switcher at the top: **Giáo án** | **Giáo trình** | **Tài liệu tham khảo**.
+- Drive switcher at the top: **Đề cương** | **Giáo trình** | **Tài liệu tham khảo**.
 - Breadcrumb showing the current path within the active drive.
 - Toolbar: **Tạo thư mục** | **Tải lên** | drive-usage indicator (e.g. `1.2 GB / 3 GB`).
 - Two-pane explorer-style view: folder tree on the left, file/folder list on the right.

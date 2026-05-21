@@ -116,7 +116,7 @@ MONGO_URI2=mongodb://localhost:27017/[DB_NAME_2]
 
 **Fix:**
 - Confirm file size; split if it's a giant archive.
-- `du -sh backend/uploads/{giaoAn,giaoTrinh,taiLieuThamKhao}/*` to check current drive sizes.
+- `du -sh backend/uploads/{deCuong,giaoTrinh,taiLieuThamKhao}/*` to check current drive sizes.
 - In production: `client_max_body_size 110M;` in the Nginx server block.
 
 ### Download returns 404 but the file exists in the UI

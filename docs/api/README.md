@@ -151,7 +151,7 @@ Read-only from this API. Lives in the secondary Mongo cluster.
 
 ## Learning materials (`/api/hoc-lieu`)
 
-Folder/file tree across three drives (`giaoAn`, `giaoTrinh`, `taiLieuThamKhao`). Quotas: 3 GB per drive, 100 MB per file. See [`docs/architecture/file-storage.md`](../architecture/file-storage.md).
+Folder/file tree across three drives (`deCuong`, `giaoTrinh`, `taiLieuThamKhao`). Quotas: 3 GB per drive, 100 MB per file. See [`docs/architecture/file-storage.md`](../architecture/file-storage.md).
 
 | Method | Path | Detail |
 |---|---|---|
