@@ -45,6 +45,10 @@ Source: `CapNhatHoSoSucKhoeView.tsx`.
 
 Health-record management. Filters: `khoa`, `daiDoi`, `truong`. **Writable for teachers within scope** — they can update a record's `thoiGianVe` and `trangThai` when a student is discharged, without going to the full [Hồ sơ sức khỏe page](../quan-ly-sinh-vien/ho-so-suc-khoe.md) (which is hidden from teachers anyway).
 
+Each row joins the health record back to its student for the info columns (`Họ và tên`, `Đại đội`, `Số điện thoại`, `Trường`). The join goes through a merged `studentMap` — the SV-tab paginated students plus a separate `studentSupplements` map filled by an on-demand `getMany` for IDs the records reference but the SV-tab page doesn't contain. Without the supplement, SK records pointing at students outside the SV-tab page (a common case, because the two tabs have independent filters) would render with blank student-info cells.
+
+**Column layout** mirrors the hoSoSucKhoe Thống kê table minus the Khoa column and the inline-edit actions (teachers are scoped to one khoa, and the edit modal lives elsewhere): STT, Họ và tên, Đại đội, Thầy quản lý, Khung (Chính trị / Quân sự), Số điện thoại, Trường, Thời gian đi (Giờ / Ngày), Thời gian về, Bệnh viện, Lý do, Chuẩn đoán BV, Người đi kèm (Sinh viên / Người thân), Thuốc ĐTCC, Sinh viên đi cùng. The `Khung` and `Người đi kèm` 2-subcol cells render an `x` when `record.khung` / `record.nguoiDiKem` matches the subcol label. Sinh viên đi cùng is a free-text companion-name field (separate from the `Người đi kèm` enum).
+
 ### Tab 4 — "Nhận lịch giảng dạy" — **stub**
 
 Source: `NhanLichGiangDayView.tsx`. Placeholder; the teaching-schedule receiving flow is not implemented yet.

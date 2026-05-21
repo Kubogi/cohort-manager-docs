@@ -52,6 +52,8 @@ Source: `ThongKeDetailPage.tsx`.
 **What it shows:**
 - More columns than Tab 1 — includes `khung`, `nguoiDiKem`, `chuanDoanBenhVien`, `sinhVienDiCung`.
 
+**Student-info columns** (`Họ và tên`, `Khóa`, `Đại đội`, `Số điện thoại`, `Trường`) come from the hook's merged `studentById` map — the paginated students list plus on-demand `getMany` supplements for IDs referenced by visible records but missing from the current student page. This is why the columns render correctly even without any filters set; the previous lookup walked `data.students` (the current page only) and produced blank cells for any record whose student lived past the page slice.
+
 ### Tab 3 — "Báo cáo"
 
 Source: `BaoCaoAggregationPage.tsx`.
@@ -65,6 +67,8 @@ Source: `BaoCaoAggregationPage.tsx`.
 
 **Toolbar:**
 - A **Xóa bộ lọc** button under the filter row resets `khoa`, `donViLienKet`, and `daiDoi` together — same handler as the sibling tabs. Disabled while data is loading.
+
+**Pagination:** The stats table uses the shared `TablePagination` (default 50 rows, options 10/25/50/100). Pagination is **client-side** because `stats` is a small bounded aggregation (one row per đại đội). The `STT` column shows the global rank across the full stats list (sorted by số ca đi viện desc), so the top đại đội remains `STT=1` even on page 2+. The page auto-resets to 1 when the row count shrinks below the current page (e.g. filter change).
 
 ## Common tasks
 
