@@ -30,7 +30,8 @@ Track health events — illness, hospital admission, discharge — for individua
 Source: `HoSoListingPage.tsx`.
 
 **What it does:**
-- Filter by `khoa`/`daiDoi`/`trangThai` (Bình thường / Viện). All four filters are **server-side** — `trangThai` is sent as a comma-separated `trangThai=` query param so matches across the whole result set show up, not just the current page slice.
+- Filter by `khoa`/`daiDoi`/`trangThai` (Bình thường / Viện). All four filters are **server-side**: `trangThai` is sent as a comma-separated `trangThai=` query param. When the filter is restrictive (one of the two values, not both), the hook bumps the records fetch to `perPage=10000` so the full match set arrives in one shot — Tab 1 then sources `displayedStudents` from the (now-complete) `healthRecords` via the supplemented `studentById` map, so every active-Viện student is visible regardless of which student page they live on. "Bình thường only" subtracts active-Viện IDs from the current student page (cross-page Bình thường isn't expressible against the records collection — flagged as a known limitation).
+- **Pagination semantics under the Viện-only filter**: the table slices the FULL derived list client-side using `studentsPagination`. The footer total reads the derived count (e.g. "1–50 of 75"), not the server's student total. Paging the slice does NOT trigger a student refetch — the data is already complete in `healthRecords` + `studentById`. Clearing back to "both" reverts to server-paginated student fetching with the full student total in the footer.
 - **Thêm hồ sơ** opens a modal — pick a student, then enter `thayQuanLy`, `khung` (Chính trị/Quân sự), `thoiGianDi.{gio, ngay}`, `benhVien`, `lyDo`, `chuanDoanBenhVien`, `nguoiDiKem` (Sinh viên/Người thân), `thuocDTCC`, `sinhVienDiCung`, `trangThai`.
 - Optionally upload a discharge attachment via the `AttachmentField` (one file per record, owner type = `HoSoSucKhoe`).
 - **Sửa** opens the same modal pre-filled. Common edit: set `thoiGianVe.{gio, ngay}` when the student is discharged, and flip `trangThai` from "Viện" back to "Bình thường".
@@ -64,6 +65,7 @@ Source: `BaoCaoAggregationPage.tsx`.
 
 **What it shows:**
 - A pivot-style table or chart with counts by `trangThai` per unit.
+- **Đơn vị liên kết** is sourced from `dd.donViLienKet` on each `DaiDoi` lookup entry (the schema field is `donViLienKet`, not `truong` — a previous version of the hook read `dd.truong` and left the cell blank for every đại đội with zero records). The cell render falls back: `unitLookups.truongMap[id]` → on-demand `dataProvider.getMany('don-vi/don-vi-lien-ket', { ids: missing })` supplement → raw ID. Orphaned references therefore render the raw ID instead of going blank.
 
 **Toolbar:**
 - A **Xóa bộ lọc** button under the filter row resets `khoa`, `donViLienKet`, and `daiDoi` together — same handler as the sibling tabs. Disabled while data is loading.
