@@ -17,7 +17,7 @@ Manage administrative decisions (Hoãn học, Thôi học, Đình chỉ, Miễn 
 ## Layout
 
 - Filter bar: `khoa`, `đại đội`, `loại QĐ`, `trạng thái`.
-- Advanced search: `maSV`, `hoTen`, `ngaySinh`, `lop`, `loaiQD`.
+- Advanced search: `maSV`, `hoTen`, `ngaySinh`, `lop`, `soQD` (substring, case-insensitive), `ngayKiQD` (exact day, dd/mm/yyyy), `loaiQD`, `trangThai`. The three decision-side filters (`loaiQD`, `soQD`, `ngayKiQD`) join on each student's **latest** decision via `latestDecisionByStudentId`; setting ANY of them activates the cross-page supplement path, so a matching student appears regardless of which server-paginated student page they live on.
 - Action buttons: **Thêm QĐ** | **Xuất Excel**.
 - Table: paginated list of `QuyetDinh` rows joined with the student.
 
