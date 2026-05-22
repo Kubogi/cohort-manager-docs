@@ -30,7 +30,7 @@ Track health events — illness, hospital admission, discharge — for individua
 Source: `HoSoListingPage.tsx`.
 
 **What it does:**
-- Filter by `khoa`/`daiDoi`/`trangThai` (Bình thường / Viện).
+- Filter by `khoa`/`daiDoi`/`trangThai` (Bình thường / Viện). All four filters are **server-side** — `trangThai` is sent as a comma-separated `trangThai=` query param so matches across the whole result set show up, not just the current page slice.
 - **Thêm hồ sơ** opens a modal — pick a student, then enter `thayQuanLy`, `khung` (Chính trị/Quân sự), `thoiGianDi.{gio, ngay}`, `benhVien`, `lyDo`, `chuanDoanBenhVien`, `nguoiDiKem` (Sinh viên/Người thân), `thuocDTCC`, `sinhVienDiCung`, `trangThai`.
 - Optionally upload a discharge attachment via the `AttachmentField` (one file per record, owner type = `HoSoSucKhoe`).
 - **Sửa** opens the same modal pre-filled. Common edit: set `thoiGianVe.{gio, ngay}` when the student is discharged, and flip `trangThai` from "Viện" back to "Bình thường".

@@ -14,7 +14,7 @@ Maintain the roster of management staff / instructors. These records are referen
 ## Layout
 
 - Filter bar: search by `hoTen`, `donViQL`, `capBac`, `soQD`.
-- Action buttons: **Thêm giảng viên** | **Nhập từ Excel** | **Xuất Excel**.
+- Action buttons: **Tìm kiếm** | **Xóa bộ lọc** | **Thêm giảng viên** | **Nhập excel**. "Xóa bộ lọc" zeroes all 4 search inputs, resets pagination to page 1, and refetches the unfiltered list (matching the same secondary-button style used elsewhere — e.g. hoSoSucKhoe Báo cáo).
 - Table: name, military rank, position, managing unit, decision number, validity, phone, linked account.
 
 ## Common tasks

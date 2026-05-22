@@ -49,7 +49,7 @@ End-of-cohort summary view. For a selected `khoa` (and optionally `daiDoi`/`truo
 - Calls `GET /api/diem/summary?he=Đại học&khoa=…&daiDoi=…&truong=…`.
 - Backend aggregates `SinhVien.diem[]` and returns one record per student with per-subject `tbMon` and an overall average.
 - **Read-only.** No in-place editing on this tab.
-- **Xuất Excel** button calls `GET /api/bieu-mau/export` with `(he, danhSach='Sổ điểm…', khoa, daiDoi?, truong?)`. The browser downloads a populated workbook.
+- **Xuất Excel** button calls `GET /api/bieu-mau/export` with `(he, danhSach='Sổ điểm…', mon, khoa, daiDoi?, truong?, fillGrades=true)`. The `fillGrades=true` flag tells the backend to populate each student's component scores (`thuongXuyen`, `mieng`, `giuaHP`, `hetHP`, `tbMon`) from the stored `diem` array for the selected `mon`. Students with no `diem` entry for that `mon` get blank cells. This is the only call signature in the app that sets the flag — biểu mẫu in ấn omits it so its templates remain blank for hand-printing.
 
 **What it shows:**
 - One row per student in the selected scope.

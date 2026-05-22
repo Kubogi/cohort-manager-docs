@@ -20,7 +20,7 @@ Look up a student's grades and/or certificate by partial identity — name + dat
 - Two result tables rendered sequentially in a **vertical flex column** — there is no side-by-side layout at any breakpoint:
   - **Bảng điểm** (`GradeResultTable`) — grades for the matched student (from `SinhVien.diem[]` in the primary cluster).
   - **Chứng chỉ** (`CertificateResultTable`) — certificate record from the secondary cluster's `students` collection.
-- A combined search button submits both queries.
+- Two buttons under the form: **Tra cứu** submits both queries; **Xóa** clears every input field, both result tables, the error banner, and resets `hasSearched`.
 
 ## Common tasks
 
@@ -36,3 +36,4 @@ Look up a student's grades and/or certificate by partial identity — name + dat
 - **`ngay_sinh` in the secondary is a *string*.** The lookup uses string comparison, so date format matters: send `dd/mm/yyyy`, not ISO. The frontend handles the conversion.
 - **`donViLienKet` in Path B is the secondary-cluster school document.** Use the SearchableSelect — typing the school name fuzzy-matches.
 - **No edits here.** Read-only on both tables.
+- **No pagination.** Each search fetches the full result set in one round-trip (the backend accepts `limit=10000`, easily covering single-student lookups). If a search ever needs to return more than 10k rows, overflow is silently dropped — the page's identity-based filters (maSV+truong or hoTen+ngaySinh) make this scenario extremely unlikely.

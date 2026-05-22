@@ -27,9 +27,12 @@ GET /api/bieu-mau/export
   &daiDoi=<ObjectId>                        (optional filter)
   &truong=<ObjectId>                        (optional filter)
   &status=<comma-separated trạng thái>      (optional; e.g. "Đang học,Hoãn học")
+  &fillGrades=true                          (optional; soDiem only — populate grade cells from each student's stored diem)
 ```
 
 `status` accepts a single enum value or a comma-separated list; multi-value is matched via `$in` against `SinhVien.trangThai`. Omitting the param applies no status filter.
+
+`fillGrades=true` is the **nhập điểm** call signature; it only takes effect when `(he, danhSach)` resolves to a `soDiem` template. The backend then looks up each in-scope student's `diem` array, finds the entry whose `mon` equals the request's `mon`, and writes the component scores (`thuongXuyen`, `mieng` for Cao đẳng, `giuaHP`, `hetHP`, `tbMon`) into the layout's grade columns. Students with no matching `diem` entry keep blank cells. Omitting the flag (the **biểu mẫu in ấn** call signature) keeps every grade cell blank for printable hand-filled forms.
 
 Valid enum values: `Đang học`, `Hoãn học`, `Thôi học`, `Đình chỉ`, `Học ghép`, `Học lẻ`, `Miễn học`, `Không tham gia học`.
 
@@ -102,6 +105,7 @@ curl -o "Sổ điểm.xlsx" \
 - **Per-unit scoping applies** — `applyUnitScope` (staff) or `applyTeacherScope` (teacher) filters which students appear. Admin sees all.
 - **`status` is applied before the workbook fill**, so the resulting roster only contains students whose `trangThai` is in the supplied set. Useful for printing rosters of e.g. only `Đang học` students.
 - **`tbMon` is read from the SinhVien.diem subdocument as-is** — the exporter does **not** recompute, so the integer-arithmetic guarantees from the schema hook are preserved.
+- **`fillGrades=true`** (used only by **nhập điểm**) loads each student's `diem` array server-side and populates the layout's grade columns for the row matching the requested `mon`. **biểu mẫu in ấn** omits the flag so its printable templates remain blank.
 - **Empty filter results produce an empty workbook**, not an error. If your students don't appear, check the filters.
 
 ## Related
