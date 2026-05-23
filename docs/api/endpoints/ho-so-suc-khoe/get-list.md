@@ -33,7 +33,13 @@ Authorization: Bearer <access_token>
 | limit | number | 20 | Items per page |
 | khoa | string | - | Filter by Khoa ID |
 | daiDoi | string | - | Filter by DaiDoi ID |
-| trangThai | string | - | Filter by status: "Bình thường" or "Viện" |
+| trangThai | string | - | Filter by status: "Bình thường" or "Viện". Comma-separated (e.g. `Viện,Bình thường`) returns the union via `$in`. |
+| hoTen | string | - | Case-insensitive substring on `SinhVien.hoTen`. Narrows records to those whose `sinhVien` matches. |
+| maSV | string | - | Case-insensitive substring on `SinhVien.maSV`. Same join semantics as `hoTen`. |
+| lop | string | - | Case-insensitive substring on `SinhVien.lop`. Same join semantics as `hoTen`. |
+| ngaySinh | string | - | Day-precision match on `SinhVien.ngaySinh` (`dd/mm/yyyy` or `yyyy-mm-dd`). Same join semantics as `hoTen`. |
+
+**Student-field filters (`hoTen`/`maSV`/`lop`/`ngaySinh`)** resolve matching `SinhVien._id`s first (with the caller's unit + teacher scope applied), then narrow the record set via `{ sinhVien: { $in: [...] } }`. If no students match, the response is empty `data: []` with `total: 0` — there is no fallback to ignoring the filter. Combined with `trangThai`, all filters AND together.
 
 ---
 
