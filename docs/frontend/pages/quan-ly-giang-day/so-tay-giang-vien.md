@@ -39,6 +39,15 @@ Grade summary by student and subject. Filters: `khoa`, `daiDoi`, `truong`, `he`,
 
 Read-only on this tab. To enter or edit grades, open [Nhập điểm](../quan-ly-diem/nhap-diem.md).
 
+**Subject columns reshape per Hệ** (mirrors `nhapDiem` "Tổng kết cuối khóa"). The hook routes the column set off `heDiem`:
+
+| `heDiem` | Columns | Subjects matched on `grade.mon` |
+|---|---|---|
+| `""` (default) or `"Đại học"` | HP1, HP2, HP3, HP4 | Đường lối QP&AN của ĐCSVN, Công tác QP&AN, Quân sự chung, Kỹ thuật chiến đấu BB&CT |
+| `"Cao đẳng"` | CT1, CT2, QS | Chính trị 1, Chính trị 2, Quân sự |
+
+Without this branch the table always rendered 4 Đại học columns; Cao đẳng cohorts produced rows where every Học phần cell was blank but Điểm TBC + Xếp loại were populated (`allAverages` sums every `g.mon` regardless of column match). Switching `heDiem` re-derives `gradeRows` from the in-memory `grades` — no `/diem` refetch.
+
 ### Tab 3 — "Cập nhật hồ sơ sức khỏe"
 
 Source: `CapNhatHoSoSucKhoeView.tsx`.
