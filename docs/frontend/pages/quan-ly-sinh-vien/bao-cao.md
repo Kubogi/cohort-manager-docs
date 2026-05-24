@@ -1,11 +1,8 @@
 # Báo cáo — Student reports
 
 **Menu path**: Quản lý sinh viên › Báo cáo
-
 **Roles**: admin · staff · viewer *(not visible to teacher)*
-
 **Source files**: [`frontend/src/resources/quanLySinhVien/baoCao.tsx`](../../../../frontend/src/resources/quanLySinhVien/baoCao.tsx) + companion folder
-
 **Related API endpoints**: [`GET /api/sinh-vien`](../../../api/endpoints/sinh-vien/get-list.md), [`GET /api/bieu-mau/export`](../../../api/README.md#excel-form-export-apibieu-mau)
 
 ## When to use
@@ -31,4 +28,4 @@ Aggregate views over the student population — counts by status, by unit, by pa
 - **Row set follows the filter.** The table shows one row per đại đội whose metadata (khoa, đơn vị liên kết, ID) matches the active filter — đại đội outside the filter never appear, even with `quanSo: 0`. The "Thống kê theo khóa" rollup follows the same filtered subset.
 - **Đơn vị liên kết lookup is bounded.** Schools (`don-vi-lien-ket`) are resolved via `dataProvider.getMany` using only the unique `donViLienKet` IDs referenced by the visible đại đội rows — not a paginated upfront fetch of the full catalog. This scales to large catalogs (hundreds of thousands of schools) without ever loading the whole list. Orphaned references (a `daiDoi.donViLienKet` pointing to a deleted school) fall back to the raw ID in the table rather than a blank cell.
 - **Đại đội and khóa fetches use `perPage: 10000`** — large enough to cover the realistic operational scale of a few thousand đại đội / hundreds of khóa even on a 100k-student DB. The previous 200-row cap silently dropped rows past the first 200, making the table look truncated. For hundreds of thousands of đại đội, the aggregation should move server-side (flagged as future work).
-- **`Số ca đi viện` counts students with any health record on file**, regardless of the record's `trangThai`. A student who was hospitalized (`Viện`) and is now discharged (`Bình thường`) still counts — the column tracks how many students in the đại đội have ever logged a health event, not the currently-in-hospital headcount.
+- **`Số ca đi viện` counts every health record** for the đại đội regardless of `trangThai` — a student with three separate visits contributes three. Matches the per-đại đội aggregation on `Hồ sơ sức khỏe › Báo cáo`. Earlier versions counted students-with-records, undercounting multi-visit students by collapsing them to a single row.

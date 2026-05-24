@@ -19,7 +19,7 @@ Roles: per-route gating lives inside the route file (the mount in `routes/index.
 
 Look up the single attachment metadata row for a given owning record. Used by the QĐ and Hồ sơ sức khỏe row components to render the "attached file" column.
 
-**Query**: `ownerType` (one of `'QuyetDinh'`, `'HoSoSucKhoe'`, `'KhaoSatTuDanhGiaNam'`, `'KhaoSatHoatDongTrungTamNam'`, `'KhaoSatGiangVien'`), `ownerId` (24-hex ObjectId).
+**Query**: `ownerType` — any value in [`ATTACHMENT_OWNER_TYPES`](../../../backend/schemas/Attachment.md#ownertype--backing-model) (active: `'QuyetDinh'`, `'HoSoSucKhoe'`, six `'KhaoSat{Gv,PhanHoiGV,PhanHoiTrungTam}{Source,Report}'` values; three deprecated KhaoSat values still accepted for legacy rows). `ownerId` is a 24-hex ObjectId.
 
 **Response**: `{ data: AttachmentRow | null }`. `null` when no attachment exists for the owner.
 
@@ -27,9 +27,11 @@ Look up the single attachment metadata row for a given owning record. Used by th
 
 Upload + create. `multipart/form-data`.
 
-**Fields**: `file` (required, ≤ 100 MB per `MAX_FILE_SIZE` in [`storage.js`](../../../../backend/src/config/storage.js); multer fileFilter checks `ALLOWED_MIMETYPES`), `ownerType` (one of the five values listed above), `ownerId` (ObjectId of the owning record).
+**Fields**: `file` (required, ≤ 100 MB per `MAX_FILE_SIZE` in [`storage.js`](../../../../backend/src/config/storage.js); multer fileFilter checks `ALLOWED_MIMETYPES`), `ownerType` (any value listed above), `ownerId` (ObjectId of the owning record).
 
 If a row already exists for `(ownerType, ownerId)`, this endpoint **upserts** — the new file replaces the old one and the prior on-disk file is unlinked. No 409 in normal use; the unique-index conflict path is only reachable under a race.
+
+> **Note**: the six active `KhaoSat*Source/Report` ownerTypes are normally written by [`POST /api/khao-sat-chat-luong/process`](../khao-sat-chat-luong/README.md#post-apikhao-sat-chat-luongprocess) as a side-effect (when `nam` is provided), not via this endpoint. The direct route still accepts them for admin parity.
 
 **Response 201**: `{ data: { _id, name, mimeType, size, storagePath, ownerType, ownerId, uploadedBy } }`.
 

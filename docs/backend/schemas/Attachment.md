@@ -4,7 +4,7 @@
 
 **Collection**: `attachments` (primary cluster)
 
-**Last verified**: 2026-05-24
+**Last verified**: 2026-05-24 (ketQuaKhaoSat archive migration)
 
 Polymorphic file reference. Each row points at exactly one owning record. `ownerType` is a **slot identifier** from the UI's perspective — multiple ownerTypes can share one backing mongoose model (e.g. the two survey-year slots both reference a `KhaoSatChatLuongNam` row). The `OWNER_MODEL_MAP` in `attachment.service.js` resolves ownerType → model for existence checks.
 
@@ -18,7 +18,7 @@ The unique `{ ownerType, ownerId }` index enforces **one attachment per (slot, o
 | `mimeType` | String | Yes | — | Set by multer. |
 | `size` | Number (bytes) | Yes | — | Set by multer. |
 | `storagePath` | String | Yes | — | Disk path relative to `UPLOADS_ROOT` (e.g. `attachments/QuyetDinh/<uuid>.pdf`). |
-| `ownerType` | String enum | Yes | — | One of `'QuyetDinh'`, `'HoSoSucKhoe'`, `'KhaoSatTuDanhGiaNam'`, `'KhaoSatHoatDongTrungTamNam'`, `'KhaoSatGiangVien'` (constant `ATTACHMENT_OWNER_TYPES` in the source). |
+| `ownerType` | String enum | Yes | — | See `ATTACHMENT_OWNER_TYPES` in the source. Active values: `'QuyetDinh'`, `'HoSoSucKhoe'`, and the six ketQuaKhaoSat slots below. Three legacy survey values (`'KhaoSatTuDanhGiaNam'`, `'KhaoSatHoatDongTrungTamNam'`, `'KhaoSatGiangVien'`) remain in the enum so pre-migration rows stay valid; no UI writes to them. |
 | `ownerId` | ObjectId | Yes | — | Reference into the model resolved by `OWNER_MODEL_MAP[ownerType]`. No `refPath` (would be incorrect for slot-style ownerTypes); use the map when populating manually. |
 | `uploadedBy` | ObjectId → User | No | `null` | User who uploaded the file. |
 | `createdAt`, `updatedAt` | Date | Auto | — | Mongoose timestamps. |
@@ -29,14 +29,25 @@ The unique `{ ownerType, ownerId }` index enforces **one attachment per (slot, o
 |---|---|---|
 | `QuyetDinh` | `QuyetDinh` | Scan/PDF attached to an admin decision. |
 | `HoSoSucKhoe` | `HoSoSucKhoe` | Scan/PDF attached to a health record. |
-| `KhaoSatTuDanhGiaNam` | `KhaoSatChatLuongNam` | Year-level result file for the instructor self-evaluation. |
-| `KhaoSatHoatDongTrungTamNam` | `KhaoSatChatLuongNam` | Year-level result file for the Trung tâm activity feedback. |
-| `KhaoSatGiangVien` | `GiangVienKhaoSat` | (Year, teacher)-level result file for the per-instructor feedback. |
+| `KhaoSatGvTuDanhGiaSource` | `KhaoSatChatLuongNam` | **ketQuaKhaoSat / gvTuDanhGia** tab — uploaded source file (year-scoped). |
+| `KhaoSatGvTuDanhGiaReport` | `KhaoSatChatLuongNam` | **ketQuaKhaoSat / gvTuDanhGia** tab — generated report (year-scoped). |
+| `KhaoSatPhanHoiGVSource` | `KhaoSatChatLuongNam` | **ketQuaKhaoSat / phanHoiGV** tab — uploaded source file (one merged sheet per năm; not per-teacher). |
+| `KhaoSatPhanHoiGVReport` | `KhaoSatChatLuongNam` | **ketQuaKhaoSat / phanHoiGV** tab — generated per-teacher report (year-scoped). |
+| `KhaoSatPhanHoiTrungTamSource` | `KhaoSatChatLuongNam` | **ketQuaKhaoSat / phanHoiTrungTam** tab — uploaded source file (year-scoped). |
+| `KhaoSatPhanHoiTrungTamReport` | `KhaoSatChatLuongNam` | **ketQuaKhaoSat / phanHoiTrungTam** tab — generated report (year-scoped). |
+| `KhaoSatTuDanhGiaNam` | `KhaoSatChatLuongNam` | **DEPRECATED** — previously used by the giangVienTuDanhGia link page. Replaced by `KhaoSatGvTuDanhGiaSource/Report`. |
+| `KhaoSatHoatDongTrungTamNam` | `KhaoSatChatLuongNam` | **DEPRECATED** — previously used by khaoSatSinhVien. Replaced by `KhaoSatPhanHoiTrungTamSource/Report`. |
+| `KhaoSatGiangVien` | `GiangVienKhaoSat` | **DEPRECATED** — previously per-(teacher, năm) on khaoSatSinhVien. Replaced by the per-năm `KhaoSatPhanHoiGVSource/Report` pair (phanHoiGV is one merged sheet per năm). |
 
 ### Write authorization
 
 `QuyetDinh` + `HoSoSucKhoe` writes (POST, DELETE) accept `admin` and `staff`.
-**The three `KhaoSat*` ownerTypes are admin-only** — staff/teacher hitting POST/DELETE with one of those types gets `403 FORBIDDEN`. Reads remain open per route (admin/staff/viewer/teacher).
+**All nine `KhaoSat*` ownerTypes are admin-only** (the six active slots and the three deprecated ones) — non-admin POST/DELETE returns `403 FORBIDDEN`. Reads remain open per route (admin/staff/viewer/teacher).
+
+The six active ketQuaKhaoSat slots are normally written by the
+`POST /api/khao-sat-chat-luong/process` side-effect (when `nam` is provided),
+not by direct `POST /api/attachments` calls. The direct route still works
+for admins for parity.
 
 ## Indexes
 

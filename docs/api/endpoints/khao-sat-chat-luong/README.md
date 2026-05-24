@@ -67,9 +67,11 @@ Remove an instructor entry.
 
 ### `POST /api/khao-sat-chat-luong/process`
 
-**Roles**: `admin`, `staff`.
+**Roles**: route-level `admin`, `staff`. With `nam` provided, additionally **admin-only** at the service layer (consistent with the admin-only KhaoSat ownerTypes).
 
 Multipart upload of a survey-result spreadsheet exported from Google Forms (or a compatible source). The controller processes the uploaded file and streams back a **binary Excel workbook** — it does NOT return JSON and does NOT write aggregate scores into `GiangVienKhaoSat` rows.
+
+When `nam` is provided, the endpoint additionally **persists two Attachment rows** against that year — the uploaded source file and the generated report — keyed by the per-tab ownerType pair (see [Attachment schema](../../../backend/schemas/Attachment.md#ownertype--backing-model)). Re-uploading for the same `(nam, type)` replaces both rows and unlinks the old disk files.
 
 **Request**: `multipart/form-data` with the following fields:
 
@@ -78,15 +80,22 @@ Multipart upload of a survey-result spreadsheet exported from Google Forms (or a
 | `file` | file | yes | `.xls` or `.xlsx`, max 20 MB. Multer rejects other extensions before the controller runs. |
 | `type` | string | yes | Processing path selector. Must be one of `gvTuDanhGia` \| `phanHoiGV` \| `phanHoiTrungTam`. An invalid or missing value returns `400 INVALID_TYPE`. |
 | `totalInstructors` | number | no | Used only by the `gvTuDanhGia` processing path. |
+| `nam` | ObjectId | no | `_id` of a `KhaoSatChatLuongNam` row. When present, the source + generated report are persisted as Attachments against that year; admin-only when present. Omitting it preserves the pre-archive behavior (no persistence, staff still allowed). |
 
 **Response**: `200` with `Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`. The response body is the generated Excel workbook — callers should save it as a `.xlsx` file. Processing statistics are returned in the custom response header `X-KhaoSat-Stats` (URL-encoded JSON).
+
+**Errors when `nam` is provided**:
+- `400 BAD_NAM` — not a valid ObjectId
+- `400 INVALID_TYPE` — `type` is not one of the three accepted values
+- `403 FORBIDDEN` — caller is not admin
+- `404 YEAR_NOT_FOUND` — no `KhaoSatChatLuongNam` row with that id
 
 **Source**: [khaoSatChatLuong.route.js](../../../../backend/src/routes/khaoSatChatLuong.route.js) (line 40), [khaoSatChatLuongProcess.service.js](../../../../backend/src/services/khaoSatChatLuongProcess.service.js).
 
 **Notes**:
-- The temp file is written to `backend/uploads/.tmp/` and deleted in a `finally` block.
+- The temp file is written to `backend/uploads/.tmp/` and deleted in a `finally` block. When `nam` is provided, the source is also copied into `backend/uploads/attachments/<KhaoSat*Source>/` before the temp is unlinked.
 - Expected sheet shape is owned by the processing service; consult `khaoSatChatLuongProcess.service.js` for the column map before exporting your form template.
-- This endpoint is **not** wired into a frontend page today — it is invoked manually via cURL/Postman during a survey cycle.
+- The frontend ketQuaKhaoSat page (admin/staff/viewer) is the production caller — it sends `nam` whenever the admin has picked a year, which is required to enable the upload button.
 
 ## Cross-cutting notes
 
