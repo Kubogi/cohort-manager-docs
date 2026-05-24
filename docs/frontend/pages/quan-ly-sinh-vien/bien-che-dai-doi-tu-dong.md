@@ -1,70 +1,73 @@
-# Biên chế đại đội tự động — Automatic battalion assignment
+# Biên chế đại đội tự động — Battalion partition planning tool
 
 **Menu path**: Quản lý sinh viên › Biên chế đại đội tự động
-
-**Roles**: admin · staff · viewer *(not visible to teacher)*
-
-**Source files**: [`frontend/src/resources/quanLySinhVien/bienCheDaiDoiTuDong.tsx`](../../../../frontend/src/resources/quanLySinhVien/bienCheDaiDoiTuDong.tsx) + companion folder `bienCheDaiDoiTuDong/`
-
-**Related API endpoints**: [`PATCH /api/sinh-vien/:id`](../../../api/endpoints/sinh-vien/patch.md), [`GET /api/sinh-vien`](../../../api/endpoints/sinh-vien/get-list.md), [`GET /api/don-vi/dai-doi`](../../../api/endpoints/don-vi/dai-doi-get-list.md)
-
-**Related workflows**: [`auto-battalion-assignment.md`](../../../workflows/auto-battalion-assignment.md)
+**Roles**: admin · staff *(viewer can open but the backend rejects compute; teacher cannot see "Quản lý sinh viên")*
+**Source files**: [`frontend/src/resources/quanLySinhVien/bienCheDaiDoiTuDong.tsx`](../../../../frontend/src/resources/quanLySinhVien/bienCheDaiDoiTuDong.tsx) + companion folder `bienCheDaiDoiTuDong/bienChe/` (BienCheTab, ClassInputPanel, PartitionResultPanel, useBienCheData)
+**Related API endpoints**: [`POST /api/bien-che/partition`](../../../api/endpoints/bien-che/partition-post.md), [`POST /api/bien-che/parse-classes`](../../../api/endpoints/bien-che/parse-classes-post.md)
 
 ## When to use
 
-After a fresh roster lands (typically right after [Excel import of students](../../../workflows/excel-import-students.md) or manual creation), every new student needs to be placed into a battalion. This page lets staff distribute them in bulk by rule instead of dragging one record at a time. Use it again later if a transfer is needed between battalions.
+Planning an intake before any students are entered: you have a list of classes and their student counts on paper / in Excel and need to figure out how many đại đội to split them into so each đại đội has roughly the same headcount. This page is **a calculator only** — it does not read or modify any student records, đại đội records, or anything else in the database.
 
 ## Layout
 
-- Tab bar: **Biên chế đại đội** | **Chuyển đại đội**.
-- Each tab has its own filter bar and a two-column transfer-list UI.
+Single page (no tabs). Two side-by-side panels:
 
-## Tabs
+- **Left — Danh sách lớp** (`ClassInputPanel.tsx`): a `Số đại đội` input + `Biên chế` button on top, then the editable class table, then the action row (`Nhập Excel`, `+ Thêm lớp`, `Xóa toàn bộ`) and a live totals summary.
+- **Right — Kết quả biên chế** (`PartitionResultPanel.tsx`): the partition the backend computes, one sub-table per đại đội, plus a stat strip (Tổng / Cao nhất / Thấp nhất / Chênh lệch).
 
-### Tab 1 — "Biên chế đại đội" (initial assignment)
+> The historical **Chuyển đại đội** tab has been removed from this page. Its code lives untouched under `bienCheDaiDoiTuDong/chuyenDoi/` and can be brought back later under a new entry point if needed.
 
-**What it does:**
-- Filter by `khoa` (and optionally `truong`). Loads two pools:
-  - **Left**: students in this khoa with no `daiDoi` (or with a deprecated one).
-  - **Right**: a list of `DaiDoi` belonging to this khoa, each with current `quanSo` and a capacity hint.
-- Apply a distribution rule (e.g. round-robin, fill-first, by gender quota — depends on implementation). The UI computes a preview of who lands where.
-- **Lưu thay đổi** writes each `SinhVien.daiDoi` via per-student `PATCH /api/sinh-vien/:id`.
+## Input UX (left panel)
 
-**What it shows:**
-- Live count of unassigned students.
-- Per-battalion target vs current count.
-- Preview of the planned moves before commit.
+- **`Số đại đội` + `Biên chế` action bar sits above the table** — natural top-down order, and the action stays visible after a long class list.
+- Inline editable table with columns: STT, Tên lớp, Số sinh viên, (✕ delete).
+- Action row below the table: **Nhập Excel** | **+ Thêm lớp** | **Xóa toàn bộ**.
+- **Nhập Excel** opens a hidden `<input type="file">` (`.xls`/`.xlsx`) and posts the chosen file to [`POST /api/bien-che/parse-classes`](../../../api/endpoints/bien-che/parse-classes-post.md). The endpoint reads every sheet, finds the `Lớp` column by **header name** (so K178-style sheets with Lớp in col E and coSoDuLieuSinhVien-style sheets with Lớp in col I both parse cleanly), counts students per class, and sums cross-sheet duplicates into one row. Sheets without a Lớp header (e.g. summary tabs like `SỐ LƯỢNG`) are skipped silently. On success the table rows are **replaced** with the parsed list and the prior partition result is cleared. If the table already has any non-empty cell, a `window.confirm` gate fires first — accept to replace, cancel to keep what's there. The button shows "Đang nhập…" and is disabled while the request is in flight.
+- **+ Thêm lớp** appends a blank row. **Xóa toàn bộ** resets the form (including any prior result).
+- The ✕ delete button is disabled when only one row remains (otherwise the table would collapse to nothing).
+- Footer line under the table tracks `Tổng số lớp` and `Tổng số sinh viên` live as you type — useful as a sanity check before computing.
+- `Số sinh viên` and `Số đại đội` are `<Input type="number">`. The hook keeps them as strings internally to preserve normal typing UX (no premature coercion), then validates and converts at submit time.
 
-### Tab 2 — "Chuyển đại đội" (bulk transfer)
+## Validation (client-side, mirrors the backend)
 
-**What it does:**
-- Filter source `(khoa, daiDoi)` and pick a destination `daiDoi`.
-- Students are transferred using **drag-and-drop** — rows have the `draggable` attribute with `onDragStart`, `onDragOver`, and `onDrop` handlers. There are no checkboxes.
-- Writes each student's new `daiDoi` via `PATCH /api/sinh-vien/:id`.
+Before any network call, the hook emits a Vietnamese warning notify and aborts for each of:
 
-**What it shows:**
-- Source and destination battalion student counts.
-- Confirmation modal listing the affected students before commit.
+- Every row blank → "Hãy thêm ít nhất một lớp."
+- A row has `soSinhVien` filled but no `ten` → "Tên lớp không được trống."
+- Any `soSinhVien` is not a positive integer → "Số sinh viên phải là số nguyên dương."
+- `Số đại đội` empty / non-positive integer → "Số đại đội phải là số nguyên dương."
+- `Số đại đội > số lớp` → "Số đại đội không được lớn hơn số lớp."
+
+The backend revalidates and returns 400 with the same messages if these slip through. A backend rejection (network error, 400, etc.) leaves `result` untouched and surfaces a generic "Không thể tính phân bổ. Vui lòng thử lại." error notify.
+
+## Algorithm
+
+The backend uses **LPT (Longest Processing Time first)** seed + **pairwise swap/move refinement** to minimise `max - min` of per-bucket totals. Details + endpoint contract: [`POST /api/bien-che/partition`](../../../api/endpoints/bien-che/partition-post.md). Deterministic — the same input always returns the same partition.
+
+## Result UX (right panel)
+
+- Before the first compute: placeholder "Nhập danh sách lớp và bấm 'Tính toán phân bổ' để xem kết quả."
+- After a successful compute: stat strip + one table per đại đội (header "Đại đội N — Tổng: …"), classes within each đại đội sorted by `soSinhVien` desc.
+- No export. Result is on-screen only.
 
 ## Common tasks
 
-### Distribute a freshly imported intake
+### Plan a 3-đại-đội split for 8 classes
 
-1. Run the Excel import on Cơ sở dữ liệu sinh viên first.
-2. Open this page, **Tab 1**. Pick `khoa K48`.
-3. Pick a distribution rule. Click **Biên chế** to compute/preview.
-4. Inspect the preview. If it looks right, click **Lưu thay đổi** to save.
+1. Type each class's name + headcount into the table (use **+ Thêm lớp** to add rows).
+2. Enter `Số đại đội = 3`.
+3. Click **Tính toán phân bổ**. The right panel shows the assignment and `Chênh lệch` (spread) — the smaller, the more balanced.
+4. To experiment with a different bucket count, change `Số đại đội` and click again. The old result is replaced.
 
-### Move 5 students from D1 to D2
+### Start over
 
-1. Open **Tab 2**. Set source `K48 / D1`, destination `K48 / D2`.
-2. Drag the 5 students you want moved from the source list to the destination list.
-3. Click **Chuyển**. Confirm in the modal.
+Click **Xóa toàn bộ**. The class table collapses to one blank row, `Số đại đội` clears, and the result panel returns to the placeholder.
 
 ## Edge cases / gotchas
 
-- **Per-student PATCH means no atomicity across the batch.** If a network blip kills the request mid-loop, some students are moved and some aren't. The page should re-fetch and let you retry on the remainder; verify before walking away.
-- **Cross-khoa moves are disallowed.** The `sinhVien` validator (commit `7840d44`) checks `daiDoi.khoa === payload.khoa`. Trying to send a student from `K47 / D1` to `K48 / D2` returns a 400 — the destination has to be in the same khoa unless you change `khoa` in the same payload.
-- **DaiDoi's `quanSo` is not auto-updated** on student assignment. It's a hint maintained separately on the DaiDoi document; after a large reassignment, the dispatcher should reconcile `quanSo` per battalion.
-- **Teacher cannot see this page** — `App.tsx` hides "Quản lý sinh viên" from teachers.
-- **Capacity hints are advisory.** Nothing prevents you from assigning 200 students to a battalion. The UI may show a warning past a threshold but it's not a hard cap.
+- **No database touched.** Computing a partition does not assign students to đại đội. To actually move students, use the bulk-edit / drag-drop flows on the [Cơ sở dữ liệu sinh viên](./co-so-du-lieu-sinh-vien.md) page (or whichever transfer UI is currently active).
+- **Duplicate class names are rejected.** Backend returns 400. Class names must be unique (after trim) within one request.
+- **Spread isn't always 0.** With integer counts, perfect balance is often impossible (e.g. total 434 ÷ 3 = 144.67); the algorithm reaches the *integer* optimum, which may be 1–10 students apart. The stat strip's `Chênh lệch` is the gap between the busiest and quietest đại đội.
+- **Practical scale**: tested at a few dozen classes × ~10 đại đội. Feeding hundreds of classes will still work but the swap pass cost grows roughly with k² · n².
+- **Viewer + teacher**: viewer can navigate to the page but `POST /api/bien-che/partition` will 403; teacher doesn't see "Quản lý sinh viên" at all.

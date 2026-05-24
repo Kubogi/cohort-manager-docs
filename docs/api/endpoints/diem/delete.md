@@ -2,16 +2,14 @@
 
 **Endpoint**: `DELETE /api/diem/:id`  
 **Authentication**: ✅ Required  
-
-**Roles**: admin, staff, teacher (teacher writes restricted to students within `teacherScope`)
-
-**Last Verified**: 2025-12-31
+**Roles**: admin, staff
+**Last Verified**: 2026-05-23
 
 ---
 
 ## Description
 
-Deletes a grade (removes from SinhVien.diem array). Teachers can only delete grades for students within their `teacherScope`.
+Deletes a grade (removes from SinhVien.diem array). **Admin and staff only** — teachers are read-only on grades.
 
 ---
 

@@ -2,9 +2,9 @@
 
 **Endpoint**: `POST /api/diem/import`
 **Authentication**: Required (Bearer)
-**Roles**: `admin`, `staff`, `teacher`
+**Roles**: `admin`, `staff`
 **Source**: [diem.route.js:27](../../../../backend/src/routes/diem.route.js#L27), [diem.controller.js:30](../../../../backend/src/controllers/diem.controller.js#L30), [diem.service.js:255](../../../../backend/src/services/diem.service.js#L255)
-**Last verified**: 2026-05-16
+**Last verified**: 2026-05-23
 
 ## Description
 

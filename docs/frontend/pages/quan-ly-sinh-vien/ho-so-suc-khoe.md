@@ -1,11 +1,8 @@
 # Hồ sơ sức khỏe — Health records
 
 **Menu path**: Quản lý sinh viên › Hồ sơ sức khỏe
-
 **Roles**: admin · staff · viewer · teacher *(teacher and viewer are read-only on most actions)*
-
 **Source files**: [`frontend/src/resources/quanLySinhVien/hoSoSucKhoe.tsx`](../../../../frontend/src/resources/quanLySinhVien/hoSoSucKhoe.tsx) + companion folder `hoSoSucKhoe/` (HoSoListingPage, ThongKeDetailPage, BaoCaoAggregationPage)
-
 **Related API endpoints**:
 - [`GET /api/ho-so-suc-khoe`](../../../api/endpoints/ho-so-suc-khoe/get-list.md)
 - [`POST /api/ho-so-suc-khoe`](../../../api/endpoints/ho-so-suc-khoe/post.md), [`PATCH /api/ho-so-suc-khoe/:id`](../../../api/endpoints/ho-so-suc-khoe/patch.md), [`DELETE /api/ho-so-suc-khoe/:id`](../../../api/endpoints/ho-so-suc-khoe/delete.md)
@@ -93,6 +90,10 @@ Source: `BaoCaoAggregationPage.tsx`.
 
 A confirmation modal appears summarising the auto-appended `ghiChuYTe` line: `Đi viện lần N: dd/mm`. The `dd/mm` is the **admission** date (`thoiGianDi.ngay`) — the line describes *when the student went to hospital* — not the discharge date.
 
+### Delete a record (with ghi chú auto-cleanup)
+
+When a record is deleted, the backend re-derives the student's `ghiChuYTe` discharge block from the surviving records. So deleting "lần 1" of two records renumbers the surviving line to "lần 1" (instead of leaving an orphan "lần 2"). Deleting the last remaining record clears the discharge block entirely. User-authored notes that don't match the `Đi viện lần N: dd/mm` pattern are preserved verbatim — only the auto-generated lines are touched. See [`backend/src/utils/ghiChuYTeSync.js`](../../../../backend/src/utils/ghiChuYTeSync.js).
+
 ### Check how many students are currently in hospital
 
 Switch to Tab 3 (Báo cáo) and look at the "Viện" count for the relevant unit.
@@ -102,6 +103,7 @@ Switch to Tab 3 (Báo cáo) and look at the "Viện" count for the relevant unit
 - **One attachment per record.** The `Attachment` collection has a unique `{ ownerType, ownerId }` index, so each health record can only have one file. To swap, delete first then upload.
 - **`thoiGianDi` and `thoiGianVe` are subdocuments** (`{ gio, ngay }`), not a single ISO datetime. The form combines them at save time; do not expect a single `Date` field.
 - **`khung` enum is fixed**: `'Chính trị'` or `'Quân sự'`. Don't free-text it.
-- **`trangThai` flip vs deletion.** Deleting a record removes the historical log; usually you want to *update* `thoiGianVe` and `trangThai` instead of deleting.
+- **`trangThai` flip vs deletion.** Deleting a record removes the historical log; usually you want to *update* `thoiGianVe` and `trangThai` instead of deleting. When you do delete, the auto-generated `ghiChuYTe` discharge lines for that student are renumbered to match — see "Delete a record" above.
+- **Mã SV is read-only in both add and edit forms.** The field is auto-filled from the row/record context (the Thống kê tab passes the student via the supplemented `studentById` map, so off-page students still get the correct Mã SV). Re-keying isn't supported — open the form via the right row instead.
 - **No global cascade.** Deleting the underlying `SinhVien` does *not* automatically delete their health records (Mongo has no FK cascade). Prefer changing the student's status to `Thôi học` over deletion.
 - **`HoSoSucKhoe` has no indexes** (per [HoSoSucKhoe schema](../../../backend/schemas/HoSoSucKhoe.md)). Queries scan. Acceptable today; revisit if row counts climb.

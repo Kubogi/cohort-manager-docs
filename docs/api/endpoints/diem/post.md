@@ -2,14 +2,14 @@
 
 **Endpoint**: `POST /api/diem`  
 **Authentication**: ✅ Required  
-**Roles**: admin, staff, teacher (teacher writes are restricted to students within `teacherScope`)
-**Last Verified**: 2026-01-02
+**Roles**: admin, staff
+**Last Verified**: 2026-05-23
 
 ---
 
 ## Description
 
-Creates a new grade (adds to SinhVien.diem array). Admin, staff, and teacher can create grades. Teachers can only write grades for students within their `teacherScope`.
+Creates a new grade (adds to SinhVien.diem array). **Admin and staff only.** Teachers are read-only on grades — they can view and export but cannot create, update, delete, or import.
 
 ---
 
@@ -87,7 +87,7 @@ Rescaling examples (Đại học):
 ## Error Responses
 
 ### 403 Forbidden
-Only admin, staff, and teacher roles can create grades. Teachers can only create grades for students in their `teacherScope`; writing outside scope returns 403.
+Only admin and staff roles can create grades. Teacher and viewer roles always receive 403 on POST/PATCH/DELETE/import; reads remain available.
 
 ### 400 Bad Request
 Missing required fields, invalid mon value, or grades out of range.

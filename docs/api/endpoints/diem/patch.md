@@ -2,15 +2,15 @@
 
 **Endpoint**: `PATCH /api/diem/:id`  
 **Authentication**: ✅ Required  
-**Roles**: admin, staff, teacher (teacher writes restricted to students within `teacherScope`)
+**Roles**: admin, staff
 **HTTP Method**: **PATCH** (not PUT)
-**Last Verified**: 2025-12-31
+**Last Verified**: 2026-05-23
 
 ---
 
 ## Description
 
-Updates an existing grade. Partial updates supported. Teachers can only update grades for students within their `teacherScope`.
+Updates an existing grade. Partial updates supported. **Admin and staff only** — teachers are read-only on grades.
 
 ---
 

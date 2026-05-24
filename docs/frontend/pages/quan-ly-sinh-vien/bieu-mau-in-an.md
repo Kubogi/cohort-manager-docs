@@ -1,15 +1,12 @@
 # Biểu mẫu & in ấn — Forms & printing
 
 **Menu path**: Quản lý sinh viên › Biểu mẫu & in ấn
-
-**Roles**: admin · staff · viewer *(not visible to teacher)*
-
+**Roles**: admin · staff · viewer · teacher *(teachers see only students within their `teacherScope`; the page has no write endpoints — Xuất Excel works for all roles)*
 **Source files**: [`frontend/src/resources/quanLyGiangDay/bieuMauInAn/bieuMauInAn.tsx`](../../../../frontend/src/resources/quanLyGiangDay/bieuMauInAn/bieuMauInAn.tsx) + companion folder
 
 > The entry file is parked under `quanLyGiangDay/` for historical reasons even though the menu surfaces it under "Quản lý sinh viên". Don't move it without updating the import in `App.tsx`.
 
 **Related API endpoints**: [`GET /api/bieu-mau/export`](../../../api/README.md#excel-form-export-apibieu-mau)
-
 **Related workflows**: [`excel-export-forms.md`](../../../workflows/excel-export-forms.md), [`/docs/architecture/excel-pipeline.md`](../../../architecture/excel-pipeline.md)
 
 ## When to use

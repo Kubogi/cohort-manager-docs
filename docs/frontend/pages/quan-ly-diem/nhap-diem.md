@@ -1,13 +1,14 @@
 # Nhập điểm — Grade entry
 
 **Menu path**: Quản lý điểm › Nhập điểm
-**Roles**: admin · staff · viewer · teacher *(teacher is scoped by `teacherScope`; viewer is read-only)*
+**Roles**: admin · staff · viewer · teacher *(viewer and teacher are read-only — teachers see a "Tài khoản giáo viên chỉ được phép xem" banner, the grade cells render as readOnly+disabled, and the Nhập Excel / Lưu thay đổi / Hủy thay đổi buttons are disabled. Xuất excel stays enabled for everyone)*
 **Source files**: [`frontend/src/resources/quanLyDiem/nhapDiem.tsx`](../../../../frontend/src/resources/quanLyDiem/nhapDiem.tsx) + companion folder `nhapDiem/`
 **Related API endpoints**:
 - [`GET /api/sinh-vien`](../../../api/endpoints/sinh-vien/get-list.md)
 - [`POST /api/diem`](../../../api/endpoints/diem/post.md), [`PATCH /api/diem/:id`](../../../api/endpoints/diem/patch.md)
 - [`POST /api/diem/import`](../../../api/endpoints/diem/post-import.md)
 - [`GET /api/diem/summary`](../../../api/endpoints/diem/get-summary.md)
+- [`GET /api/bieu-mau/export?fillGrades=true`](../../../api/endpoints/bieu-mau/get-export.md) (Xuất Excel button)
 
 **Related workflows**: [grade-entry-and-summary.md](../../../workflows/grade-entry-and-summary.md)
 
@@ -55,6 +56,7 @@ End-of-cohort summary view. For a selected `khoa` (and optionally `daiDoi`/`truo
 - One row per student in the selected scope.
 - One column per subject (only the subjects of the chosen `he`).
 - An "Overall" column with the aggregate average.
+- **Pagination** above the table, identical to other pages (`TablePagination` + `usePagination`): default 50 rows per page, page-size options 10/25/50/100. The summary endpoint returns the full result set in one shot (no server-side paging), so paging is purely a render concern — switching pages doesn't re-fetch. The page resets to 1 automatically whenever the underlying result set changes (new fetch, filter applied, page-size change).
 
 ## Common tasks
 

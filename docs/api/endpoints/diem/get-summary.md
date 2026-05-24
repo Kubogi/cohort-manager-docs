@@ -2,18 +2,15 @@
 
 **Endpoint**: `GET /api/diem/summary`
 **Authentication**: ✅ Required
-
 **Roles**: admin, staff, viewer, teacher
-
-**Last Verified**: 2026-05-16
-
 **Unit Scoping**: ✅ Applied (staff: `allowedUnits`; teacher: `teacherScope`)
+**Last Verified**: 2026-05-23
 
 ---
 
 ## Description
 
-Returns per-student grade summaries for all subjects in the specified education system (`he`). One row per student, each row containing the student's latest `tbMon` for every subject in that `he`.
+Returns per-student grade summaries for all subjects in the specified education system (`he`). **One row per in-scope student** — students with no `diem` entries are still included; their `grades` array contains one entry per subject with `tbMon: null`. The roster matches `/api/sinh-vien` for the same filters, so the Tổng kết cuối khóa tab shows the full cohort even when nobody has been graded yet.
 
 ---
 
@@ -58,7 +55,9 @@ Authorization: Bearer <access_token>
 }
 ```
 
-Each item in `data` is one student. The `grades` array contains one entry per subject in the chosen `he`, with the latest `tbMon` for that subject. Students with no grades for a subject will not have that subject in their `grades` array.
+Each item in `data` is one student. The `grades` array contains **one entry per subject in the chosen `he`** (4 for Đại học, 3 for Cao đẳng), with the latest `tbMon` for that subject — or `tbMon: null` when the student has no grade recorded for that subject yet.
+
+`data` is ordered by the canonical student sort: `khoaSortKey ASC → daiDoiSortKey ASC → _id ASC`. Within a single (khoa, đại đội) filter that reduces to `_id ASC`, which matches Mongo insertion order and the order used by `/api/sinh-vien` and the Excel exports.
 
 ---
 

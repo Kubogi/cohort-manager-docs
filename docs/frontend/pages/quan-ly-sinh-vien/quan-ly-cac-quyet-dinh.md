@@ -1,13 +1,9 @@
 # Quản lý các QĐ/CV — Decisions & memoranda
 
 **Menu path**: Quản lý sinh viên › Quản lý các QĐ/CV
-
-**Roles**: admin · staff · viewer *(not visible to teacher)* — write actions are admin-only
-
+**Roles**: admin · staff · viewer · teacher *(teachers see only decisions for students within their `teacherScope`; write actions remain admin-only — teachers cannot Thêm QĐ or import)*
 **Source files**: [`frontend/src/resources/quanLySinhVien/quanLyCacQuyetDinh.tsx`](../../../../frontend/src/resources/quanLySinhVien/quanLyCacQuyetDinh.tsx) + companion folder `quyetDinh/`
-
 **Related API endpoints**: [`/api/quyet-dinh/*`](../../../api/README.md#decisions-apiquyet-dinh), [`/api/sinh-vien/:id`](../../../api/endpoints/sinh-vien/patch.md), [`/api/attachments/*`](../../../api/README.md#attachments-apiattachments)
-
 **Related workflows**: **[`decision-processing.md`](../../../workflows/decision-processing.md)** — required reading
 
 ## When to use
