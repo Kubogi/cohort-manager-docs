@@ -2,7 +2,7 @@
 
 **Menu path**: Khảo sát chất lượng › Kết quả khảo sát
 
-**Roles**: admin · staff · viewer · teacher
+**Roles**: admin · staff · viewer (teacher: **hidden**; the resource is not mounted for teacher accounts and the menu item does not render)
 
 **Source files**: [`frontend/src/resources/khaoSatChatLuong/ketQuaKhaoSat/ketQuaKhaoSat.tsx`](../../../../frontend/src/resources/khaoSatChatLuong/ketQuaKhaoSat/ketQuaKhaoSat.tsx) + `KetQuaKhaoSatView.tsx`
 
