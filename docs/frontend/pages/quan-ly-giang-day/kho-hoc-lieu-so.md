@@ -1,13 +1,9 @@
 # Kho học liệu số — Digital learning materials repository
 
 **Menu path**: Quản lý giảng dạy › Kho học liệu số
-
-**Roles**: admin · staff · viewer · teacher
-
+**Roles**: admin · staff · viewer · teacher *(teacher is read-only — browse + download only; the Tải lên / Thư mục mới toolbar buttons and the per-row Đổi tên / Xóa buttons are hidden entirely for teacher accounts)*
 **Source files**: [`frontend/src/resources/quanLyGiangDay/khoHocLieuSo/khoHocLieuSo.tsx`](../../../../frontend/src/resources/quanLyGiangDay/khoHocLieuSo/khoHocLieuSo.tsx) + companion folder
-
 **Related API endpoints**: [`/api/hoc-lieu/*`](../../../api/README.md#learning-materials-apihoc-lieu)
-
 **Related workflows**: [`learning-materials.md`](../../../workflows/learning-materials.md)
 
 ## When to use
@@ -52,3 +48,4 @@ Confirmation modal lists the children that will also be deleted. On confirm, the
 - **Subtree rename behavior is implementation-dependent.** Confirm that renaming a folder also updates the `storagePath` of all descendants before doing it on a large subtree. If unsure, test on a copy.
 - **Deletion cascades on disk.** A successful delete removes the on-disk file in the same operation. If the FS write fails after the Mongo delete, the orphan file is lost — there's no rollback.
 - **Teacher can access this page** even though "Quản lý sinh viên" is hidden from them. Teaching materials are part of the teacher's daily work.
+- **Teacher accounts are read-only.** The Tải lên + Thư mục mới buttons on the toolbar and the Đổi tên + Xóa buttons on each row are hidden when `usePermissions()` returns `'teacher'`. Tải xuống stays visible so teachers can still pull files. UI-only enforcement; the backend write endpoints don't currently reject teacher writes, so a teacher with raw API access could still POST/PATCH/DELETE — flagged as a follow-up if hardening is required.
