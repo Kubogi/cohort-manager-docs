@@ -8,7 +8,7 @@
 
 **Unit Scoping**: ✅ Applied (staff: `allowedUnits`; teacher: `teacherScope`)
 
-**Last Verified**: 2026-05-16
+**Last Verified**: 2026-05-25
 
 ---
 
@@ -31,8 +31,8 @@ Authorization: Bearer <access_token>
 |-----------|------|---------|-------------|
 | page | number | 1 | Page number (1-indexed) |
 | limit | number | 20 | Items per page |
-| khoa | string | - | Filter by Khoa ID |
-| daiDoi | string | - | Filter by DaiDoi ID |
+| khoa | string | - | Filter by Khoa ID. Resolved through `SinhVien.khoa` → `QuyetDinh.sinhVien $in` (the `QuyetDinh.khoa` denormalized field is not populated on create, so a direct field filter would return zero rows). |
+| daiDoi | string | - | Filter by DaiDoi ID. Same indirection as `khoa` — resolved through `SinhVien.daiDoi`. |
 | type | string | - | Filter by decision type (maps to loaiQD field) |
 | status | string | - | Filter by status (maps to trangThai field) |
 | from | string | - | Filter by start date (ngayKiQD >= from, ISO date) |
